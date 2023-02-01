@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --max-width: 1100px;
   --border-radius: 12px;
@@ -104,4 +108,21 @@ a {
   html {
     color-scheme: dark;
   }
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.random-paragraph {
+  font-size: 2rem;
+  font-weight: 600;
+  text-align: center;
+  margin: 20rem 10rem;
+  line-height: 1.5em;
+  animation: fadeIn 5s;
+  animation: fadeOut 5s;
 }
