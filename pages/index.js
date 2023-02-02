@@ -1,5 +1,5 @@
 import PDFInput from '../components/PDFInput';
-import Date from '../components/Date';
+import Date from '../components/date.js';
 
 export default function Home() {
   return (
