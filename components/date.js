@@ -13,6 +13,7 @@ const Index = () => {
   return (
     <div>
       <p>Current date: {date}</p>
+      {date}
     </div>
   );
 };

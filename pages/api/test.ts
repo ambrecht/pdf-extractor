@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { promises as fs } from 'fs';
-import path from 'path';
 import formidable, { File } from 'formidable'; // Import formidable
 import pdf from 'pdf-parse'; // Import pdf-parse
 import extractParas from '../../utils/para';
@@ -45,13 +44,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   let final = [];
   if (files?.length) {
     // Check if files were uploaded
-    /* Create directory for uploads */
-    const targetPath = path.join(process.cwd(), `/uploads/`); // Get a path to the uploads directory
-    try {
-      await fs.access(targetPath); // Check if directory exists
-    } catch (e) {
-      await fs.mkdir(targetPath); // Create directory if it doesn't exist
-    }
 
     /* Move uploaded files to directory */
     for (const file of files) {
