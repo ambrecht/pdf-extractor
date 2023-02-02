@@ -4,7 +4,7 @@ const Index = () => {
   const [date, setDate] = useState('');
 
   useEffect(() => {
-    fetch('api/date')
+    fetch('../api/hello')
       .then((response) => response.text())
       .then((data) => setDate(data))
       .catch((error) => console.error(error));
