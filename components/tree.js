@@ -8,7 +8,7 @@ const ExampleComponent = () => {
     const fetchData = async () => {
       const response = await axios({
         method: 'get',
-        url: './api/constituency',
+        url: '../api/constituency',
         headers: {
           text: 'Es fliegen die Vögel über den Stock!',
         },
