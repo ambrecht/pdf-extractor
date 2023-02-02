@@ -1,75 +1,51 @@
 import React, { useState } from 'react';
-const pdfjsLib = require('pdfjs-dist');
-import WordFrequencyTable from './WordFrequencyTable';
+import axios from 'axios';
+import RandomParagraph from './random.js';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
+const UploadPDF = () => {
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [response, setResponse] = useState(null);
 
-const ConvertPdf = () => {
-  const [pdfText, setPdfText] = useState('');
-  const [pdfFile, setPdfFile] = useState(null);
-
-  const [types, setTypes] = useState(null);
-
-  const handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    setPdfFile(file);
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
   };
 
-  const handleConvert = async () => {
-    if (!pdfFile) {
-      return alert('Please select a PDF file');
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-    const pdfData = await pdfFile.arrayBuffer();
-    pdfjsLib.getDocument({ data: pdfData }).promise.then(async (pdf) => {
-      let textContent = '';
-      const pages = [];
-      for (let i = 1; i <= pdf.numPages; i++) {
-        pages.push(pdf.getPage(i));
-      }
-      for (const page of pages) {
-        const tC = await page.then((page) => page.getTextContent());
-        textContent += tC.items.map((item) => item.str).join(' ');
-      }
-      setPdfText(textContent);
-    });
-  };
-
-  const handleSend = async () => {
-    if (!pdfText) {
-      return alert('Please convert the pdf first');
-    }
+    const formData = new FormData();
+    formData.append('file', file);
 
     try {
-      const response = await fetch(
-        'https://faas-fra1-afec6ce7.doserverless.co/api/v1/web/fn-a94063be-9cef-4f07-bebd-65ad3e72da00/sample/hello',
-        {
-          method: 'POST',
-          body: JSON.stringify({ pdfText }),
-          headers: {
-            'Authorization': 'Bearer ' + process.env.DIGITALOCEAN_TOKEN,
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-          },
+      const res = await axios.post('/api/test', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
         },
-      );
-      const json = await response.json();
-      json ? setTypes(json.data) : null;
-      alert(json.message);
+      });
+      setResponse(res.data);
     } catch (err) {
-      console.error(err);
-      alert('An error occurred, please try again');
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div>
-      <input type="file" onChange={handleFileSelect} accept="application/pdf" />
-      <button onClick={handleConvert}>Convert</button>
-      <button onClick={handleSend}>Send to Serverless API</button>
-      {types !== null ? <WordFrequencyTable types={types} /> : null}
+      <form onSubmit={handleSubmit}>
+        <input type="file" onChange={handleFileChange} />
+        <button type="submit">Upload PDF</button>
+      </form>
+      {loading && <p>Uploading...</p>}
+      {error && <p>Error: {error}</p>}
+      {response && <p>Response: Das Ding ging durch!</p>}
+      {response && <RandomParagraph data={response} />}
     </div>
   );
 };
 
-export default ConvertPdf;
+export default UploadPDF;
