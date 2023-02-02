@@ -12,11 +12,12 @@ class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         text = self.headers.get('text')
         doc = nlp(text)
+        img = BytesIO()
         displacy.render(doc, style="dep", jupyter=False,
-                        options={'distance': 90})
-        plt.show()
+                        options={'distance': 90}, out=img)
+        img.seek(0)
         self.send_response(200)
-        self.send_header('Content-type', 'text/html')
+        self.send_header('Content-type', 'image/png')
         self.end_headers()
-        self.wfile.write(bytes("Hello World!", "utf8"))
+        self.wfile.write(base64.b64encode(img.getvalue()))
         return
