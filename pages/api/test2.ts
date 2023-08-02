@@ -1,64 +1,74 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import formidable, { File } from 'formidable'; // Import formidable
-import PDFParser from 'pdf2json'; // Import pdf2json
+import { promises as fs } from 'fs';
+import formidable, { File } from 'formidable';
+import pdf from 'pdf-parse';
 import extractParas from '../../utils/para';
-import fs from 'fs';
 
 export const config = {
-  // Disable body parsing
   api: {
     bodyParser: false,
   },
 };
 
-type ProcessedFiles = Array<[string, File]>; // Define type for files
+type ProcessedFiles = Array<[string, File]>;
+
+const cleanText = (text: string) => {
+  text = text.replace(/\s+/g, ' ').trim();
+  text = text.replace(/<[^>]*>/g, '');
+  text = text.replace(/\[\d+\]/g, '');
+
+  const maxLineLength = 80;
+  const lines = [];
+  let line = '';
+  text.split(' ').forEach((word) => {
+    if (line.length + word.length > maxLineLength) {
+      lines.push(line);
+      line = '';
+    }
+    line += (line ? ' ' : '') + word;
+  });
+  if (line) lines.push(line);
+  text = lines.join('\n');
+
+  return text;
+};
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  let status = 200;
-  let final = [];
+  let status = 200,
+    resultBody = { status: 'ok', message: 'Files were uploaded successfully' };
 
-  /* Get files using formidable */
-  const files = await new Promise<ProcessedFiles | undefined>( // Create a promise to get files
+  const files = await new Promise<ProcessedFiles | undefined>(
     (resolve, reject) => {
-      const form = new formidable.IncomingForm(); // Create an instance of formidable
-      const files: ProcessedFiles = []; // Initialize array for files
+      const form = new formidable.IncomingForm();
+      const files: ProcessedFiles = [];
       form.on('file', function (field, file) {
-        // Add a listener for each file
-        files.push([field, file]); // Add file to array
+        files.push([field, file]);
       });
-      form.on('end', () => resolve(files)); // Finish promise on end event
-      form.on('error', (err) => reject(err)); // Finish promise on error event
+      form.on('end', () => resolve(files));
+      form.on('error', (err) => reject(err));
       form.parse(req);
     },
   ).catch((e) => {
     console.log(e);
     status = 500;
+    resultBody = {
+      status: 'fail',
+      message: 'Upload error',
+    };
   });
 
+  let final = [];
   if (files?.length) {
-    // Check if files were uploaded
-
     for (const file of files) {
-      // Get text from the PDF file
-      const pdfParser = new PDFParser();
-      const filePath = file[1].filepath;
-
-      pdfParser.on('pdfParser_dataError', (err) => console.error(err));
-      pdfParser.on('pdfParser_dataReady', (pdfData) => {
-        const text = pdfData.formImage.Pages.map((page) =>
-          page.Texts.map((textItem) =>
-            decodeURIComponent(textItem.R[0].T),
-          ).join(' '),
-        ).join('\n');
-        final = extractParas(text); // Extract paragraphs from the text
-        console.log(extractParas(text)); // Log text to the console
-      });
-
-      pdfParser.loadPDF(filePath);
+      const srcToFile = async (src: string) => await fs.readFile(src);
+      const fileToBuffer = () => srcToFile(file[1].filepath);
+      const data = await pdf(await fileToBuffer());
+      const paragraphs = await extractParas(data.text);
+      final = paragraphs.map(cleanText);
     }
   }
 
-  res.status(status).json(final); // Send a response
+  res.status(status).json(final);
 };
 
 export default handler;
