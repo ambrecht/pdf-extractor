@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import RandomParagraph from './random.js';
+import Reading from './readingPDF.js';
+import KeyDown from './keydowntest.js';
 
 const UploadPDF = () => {
   const [file, setFile] = useState(null);
@@ -44,6 +46,8 @@ const UploadPDF = () => {
       {error && <p>Error: {error}</p>}
       {response && <p>Response: Das Ding ging durch!</p>}
       {response && <RandomParagraph data={response} />}
+      {response && <Reading data={response} />}
+      <KeyDown></KeyDown>
     </div>
   );
 };

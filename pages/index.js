@@ -6,8 +6,6 @@ export default function Home() {
   return (
     <>
       <PDFInput></PDFInput>
-      <Date></Date>
-      <Tree></Tree>
     </>
   );
 }

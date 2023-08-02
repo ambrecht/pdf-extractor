@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { library, dom } from '@fortawesome/fontawesome-svg-core';
-import { faCoffee } from '@fortawesome/free-solid-svg-icons';
+import TextToSpeech from './elevenlabs';
+import estimateReadingTime from '../utils/readingTime';
 
 const RandomParagraph = ({ data }) => {
   const [paragraph, setParagraph] = useState('');
@@ -12,17 +12,26 @@ const RandomParagraph = ({ data }) => {
   const [time, setTime] = useState(5);
   const [isLinear, setIsLinear] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [wpm, setWpm] = useState(160);
 
   // 1. When the component mounts, set the paragraph state to a random paragraph
   useEffect(() => {
     let randomIndex = Math.floor(Math.random() * data.length);
-    setParagraph(data[randomIndex].paragraph);
+    let rawpara = data[randomIndex].paragraph;
+    setParagraph(rawpara);
     setIndex(randomIndex);
-  }, []);
+  }, []); // Entfernen Sie wpm aus der Abhängigkeitsliste
+
+  // Neuer Hook, der nur auf Änderungen der wpm-Variable reagiert
+  useEffect(() => {
+    setTime(estimateReadingTime(paragraph, wpm));
+  }, [wpm]);
 
   // 2. When the intervalIsRunning state changes, start or stop the interval
   useEffect(() => {
     if (intervalIsRunning) {
+      setTime(estimateReadingTime(paragraph, wpm));
+
       let currentIndex = index;
       const id = setInterval(() => {
         if (isLinear) {
@@ -33,17 +42,39 @@ const RandomParagraph = ({ data }) => {
         setParagraph(data[currentIndex].paragraph);
         setIndex(currentIndex);
         setHistory([...history, currentIndex]);
+
         console.log('time: ', time);
       }, time * 1000);
       console.log('time: ', time);
       setIntervalId(id);
       return () => clearInterval(id);
     }
-  }, [intervalIsRunning, time, data, history, isLinear, index]);
+  }, [intervalIsRunning, time, data, history, isLinear, index, wpm]);
 
   const handleIntervalChange = (event) => {
     console.log('Interval: ', event.target.value);
+
     setTime(event.target.value);
+  };
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    // Diese Funktion wird aufgerufen, wenn die Komponente unmountet. Sie entfernt den Event Listener, um Memory Leaks zu verhindern
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const handleKeyDown = (event) => {
+    if (event.keyCode === 39) {
+      // Pfeiltaste nach rechts
+      console.log('Right Arrow Key Pressed');
+      handleNextClick(); // Zum nächsten Absatz wechseln
+    } else if (event.keyCode === 37) {
+      // Pfeiltaste nach links
+      console.log('Left Arrow Key Pressed');
+      handlePrevClick(); // Zum vorherigen Absatz wechseln
+    }
   };
 
   // 3. A function that generates a new random paragraph and sets the paragraph state
@@ -57,7 +88,9 @@ const RandomParagraph = ({ data }) => {
     setIndex(randomIndex);
     setHistory([...history, randomIndex]);
 
-    return data[randomIndex].paragraph;
+    return `1 ${data[randomIndex].paragraph}, 2 ${
+      data[randomIndex + 1].paragraph
+    }, 3 ${data[randomIndex + 2].paragraph}`;
   };
 
   // 5. A function that starts the interval
@@ -84,113 +117,91 @@ const RandomParagraph = ({ data }) => {
       setHistory([...history, index - 1]);
     }
   };
-  console.log('history', history);
+  const teleprompterStyle = {
+    animation: intervalIsRunning
+      ? `teleprompterScroll ${time}s linear infinite`
+      : 'none',
+  };
   return (
-    <div>
-      <p className="random-paragraph ">{paragraph}</p>
-      <>
-        <button onClick={handleNewParagraph}>New Paragraph</button>
-        <button onClick={handleIntervalToggle}>
-          {intervalIsRunning ? 'Stop Interval' : 'Start Interval'}
-        </button>
-        <button onClick={() => setIsLinear(!isLinear)}>
-          {isLinear ? 'Deactivate Linear' : 'Activate Linear'}
-        </button>
-        <PrevButton onClick={handlePrevClick}>Zurück</PrevButton>
-        <StopButton
-          onClick={handleIntervalToggle}
-          isRunning={intervalIsRunning}
-        >
-          {intervalIsRunning ? 'Stop Interval' : 'Start Interval'}
-        </StopButton>
-        <NextButton onClick={handleNextClick}>Vor</NextButton>
+    <div className="flex flex-col h-full">
+      <div className="overflow-y-scroll flex-grow">
+        {data.slice(index - 1, index + 2).map((item, idx) => (
+          <p
+            key={idx}
+            className={`text-5xl font-semibold text-center my-8 mx-10 leading-relaxed transition-opacity duration-5000 ${
+              idx === 1 ? 'opacity-100' : 'opacity-50 text-gray-400'
+            }`}
+          >
+            {item.paragraph}
+          </p>
+        ))}
+      </div>
 
-        <button onClick={() => navigator.clipboard.writeText(paragraph)}>
-          Kopie
-        </button>
-        <label>Interval (in seconds):</label>
-        <input
-          type="number"
-          min="0.5"
-          max="10"
-          step="0.5"
-          value={time}
-          onChange={handleIntervalChange}
-        />
-
-        <h3>Der Verlauf der Weisheit</h3>
-        <Table>
-          {history.reverse().map((item, index) => (
-            <tr key={index}>
-              <td />
-              <td>{data[item].paragraph}</td>
-              <td />
-              <td />
-              <td />
-            </tr>
-          ))}
-        </Table>
-      </>
+      <div className="bg-white p-4 shadow-md">
+        <div className="flex flex-wrap justify-center space-x-2">
+          <button
+            onClick={handleNewParagraph}
+            className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+          >
+            New Paragraph
+          </button>
+          <button
+            onClick={handleIntervalToggle}
+            className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+          >
+            {intervalIsRunning ? 'Stop Interval' : 'Start Interval'}
+          </button>
+          <button
+            onClick={() => setIsLinear(!isLinear)}
+            className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+          >
+            {isLinear ? 'Deactivate Linear' : 'Activate Linear'}
+          </button>
+          <button
+            onClick={handlePrevClick}
+            className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400"
+          >
+            Zurück
+          </button>
+          <button
+            onClick={handleNextClick}
+            className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400"
+          >
+            Vor
+          </button>
+          <button
+            onClick={() => navigator.clipboard.writeText(paragraph)}
+            className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400"
+          >
+            Kopie
+          </button>
+          <label className="text-lg p-2">Words per Minute:</label>
+          <input
+            type="number"
+            min="50"
+            max="1000"
+            value={wpm}
+            onChange={(e) => setWpm(e.target.value)}
+            className="text-lg p-2 border rounded"
+          />
+          <h1 className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400">
+            Sekunden{time}
+          </h1>
+        </div>
+      </div>
+      <style>
+        {`
+          @keyframes teleprompterScroll {
+            from {
+              transform: translateY(0);
+            }
+            to {
+              transform: translateY(-100%);
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };
-
-const StyledButton = styled.button`
-  font-size: 1.5rem;
-  padding: 0.5rem 1rem;
-  margin: 1rem;
-  border: none;
-  border-radius: 5px;
-  background-color: #4caf50;
-  color: white;
-  &:hover {
-    background-color: #3e8e41;
-  }
-  &:before {
-    content: '';
-    font-family: 'Font Awesome 5 Free';
-    font-weight: 900;
-    margin-right: 0.2rem;
-  }
-`;
-
-const PrevButton = styled(StyledButton)`
-  &:before {
-    content: '\f053';
-  }
-`;
-
-const NextButton = styled(StyledButton)`
-  &:before {
-    content: '\f054';
-  }
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border: 1px solid black;
-  border-collapse: collapse;
-  th,
-  td {
-    border: 1px solid black;
-    padding: 0.5rem;
-  }
-`;
-
-const StopButton = styled.button`
-  background-color: ${(props) => (props.isRunning ? 'red' : 'green')}; /* red */
-  color: white;
-  border-radius: 50%;
-  width: 5rem;
-  height: 5rem;
-  font-size: 1.5rem;
-  transition: all 0.2s ease-in-out;
-  border: none;
-
-  &:hover {
-    background-color: #c9302c; /* dark red */
-    transform: scale(1.1);
-  }
-`;
-
 export default RandomParagraph;
