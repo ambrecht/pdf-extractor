@@ -16,10 +16,22 @@ const RandomParagraph = ({ data }) => {
     intervalIsRunning,
     isLinear,
     setIsLinear,
+    wordCount,
+    progress,
+    fontSize,
+    setFontSize,
+    fontColor,
+    setFontColor,
   } = useRandomParagraph(data);
   return (
     <div className="flex flex-col h-full">
-      <ParagraphDisplay paragraphs={paragraphs} />
+      <ParagraphDisplay
+        paragraphs={paragraphs}
+        progress={progress}
+        time={time}
+        fontSize={fontSize}
+        fontColor={fontColor}
+      />
       <ControlPanel
         handleNewParagraph={handleNewParagraph}
         handleIntervalToggle={handleIntervalToggle} // Diese Funktion wird als Prop übergeben
@@ -31,6 +43,9 @@ const RandomParagraph = ({ data }) => {
         intervalIsRunning={intervalIsRunning}
         isLinear={isLinear}
         setIsLinear={setIsLinear}
+        wordCount={wordCount}
+        setFontSize={setFontSize}
+        setFontColor={setFontColor}
       />
     </div>
   );

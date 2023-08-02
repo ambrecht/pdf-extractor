@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 const MyComponent = () => {
   useEffect(() => {
     const handleKeyDown = (event) => {
-      console.log('Eine Taste wurde gedrückt:', event.key);
     };
 
     window.addEventListener('keydown', handleKeyDown);

@@ -1,16 +1,25 @@
-const estimateReadingTime = (text, wordsPerMinute) => {
+const estimateReadingTime = (
+  text,
+  wordsPerMinute,
+  pauseTimes = { '.': 0.5, ',': 0.25, '!': 0.5, '?': 0.5 },
+) => {
   if (
     typeof text !== 'string' ||
     typeof wordsPerMinute !== 'number' ||
     wordsPerMinute <= 0
   ) {
-    throw new Error('Invalid input');
+    console.warn('Invalid input');
+    return 0;
   }
 
-  const words = text.match(/\b[\w'-]+\b/g); // Findet alle Wörter, einschließlich Zahlen und Bindestriche
+  const words = text.match(/\b[\w'-]+\b/g);
   const wordCount = words ? words.length : 0;
-  const sentenceCount = text.match(/[.!?]/g)?.length || 0; // Zählt die Sätze
-  const pauseTime = sentenceCount * 0.5; // Schätzt die Pausenzeit in Sekunden
+
+  let pauseTime = 0;
+  for (const punctuation in pauseTimes) {
+    const count = text.match(new RegExp(`\\${punctuation}`, 'g'))?.length || 0;
+    pauseTime += count * pauseTimes[punctuation];
+  }
 
   const minutes = wordCount / wordsPerMinute;
   const seconds = minutes * 60 + pauseTime;

@@ -16,6 +16,7 @@
     "@huggingface/inference": "^2.5.2",
     "@next/font": "13.1.1",
     "axios": "^1.2.2",
+    "bezier-easing": "^2.1.0",
     "de-compromise": "^0.0.7",
     "eslint": "8.30.0",
     "eslint-config-next": "13.1.1",

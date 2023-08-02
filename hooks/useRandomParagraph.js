@@ -1,27 +1,24 @@
 import { useState, useEffect } from 'react';
 import estimateReadingTime from '../utils/readingTime';
+import countWords from '../utils/wordCount';
 
 const useRandomParagraph = (data, initialWpm = 160) => {
-  // Zustand für die Wörter pro Minute (wpm)
   const [wpm, setWpm] = useState(initialWpm);
-  // Zustand für die drei Absätze, die angezeigt werden sollen
   const [paragraphs, setParagraphs] = useState([]);
-  // Zustand für den aktuellen Index des ausgewählten Absatzes
   const [index, setIndex] = useState(null);
-  // Zustand für die geschätzte Lesezeit
   const [time, setTime] = useState(5);
-  // Zustand für das Intervall (ob es läuft oder nicht)
   const [intervalIsRunning, setIntervalIsRunning] = useState(false);
-  // Zustand für den linearen Modus (ob aktiviert oder nicht)
-  const [isLinear, setIsLinear] = useState(false);
+  const [isLinear, setIsLinear] = useState(true);
+  const [wordCount, setWordCount] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [fontSize, setFontSize] = useState('text-5xl');
+  const [fontColor, setFontColor] = useState('gray');
 
-  // Wenn die Komponente eingehängt wird, setze den Absatz auf einen zufälligen Absatz
   useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * data.length);
-    setIndex(randomIndex);
-  }, []);
+    const newIndex = isLinear ? 0 : Math.floor(Math.random() * data.length);
+    setIndex(newIndex);
+  }, [isLinear, data.length]);
 
-  // Aktualisiere die Absätze und die geschätzte Lesezeit, wenn sich der Index oder die Wörter pro Minute (wpm) ändern
   useEffect(() => {
     if (index !== null) {
       const selectedParagraphs = [
@@ -31,10 +28,11 @@ const useRandomParagraph = (data, initialWpm = 160) => {
       ];
       setParagraphs(selectedParagraphs);
       setTime(estimateReadingTime(selectedParagraphs[1], wpm));
+      setWordCount(countWords(selectedParagraphs[1]));
+      setProgress(0); // Fortschritt zurücksetzen, wenn sich der mittlere Absatz ändert
     }
   }, [index, wpm, data]);
 
-  // Intervalllogik, die den aktuellen Absatz und Index basierend auf den Einstellungen aktualisiert
   useEffect(() => {
     if (intervalIsRunning) {
       let currentIndex = index;
@@ -51,27 +49,36 @@ const useRandomParagraph = (data, initialWpm = 160) => {
     }
   }, [intervalIsRunning, time, data, isLinear, index]);
 
-  // Funktion zum Abrufen eines neuen zufälligen Absatzes
+  useEffect(() => {
+    if (intervalIsRunning) {
+      const startTime = Date.now();
+      const interval = setInterval(() => {
+        const elapsedTime = (Date.now() - startTime) / 1000; // Verstrichene Zeit in Sekunden
+        const newProgress = (elapsedTime / (time - 1)) * 100; // Fortschritt basierend auf der verstrichenen Zeit
+        setProgress(newProgress > 100 ? 100 : newProgress);
+      }, 1000 / 60);
+
+      return () => clearInterval(interval);
+    }
+  }, [intervalIsRunning, time]);
+
   const handleNewParagraph = () => {
     const randomIndex = Math.floor(Math.random() * data.length);
     setIndex(randomIndex);
   };
 
-  // Funktion zum Wechseln zum nächsten Absatz
   const handleNextClick = () => {
     if (index < data.length - 1) {
       setIndex(index + 1);
     }
   };
 
-  // Funktion zum Wechseln zum vorherigen Absatz
   const handlePrevClick = () => {
     if (index > 0) {
       setIndex(index - 1);
     }
   };
 
-  // Funktion zum Umschalten des Intervalls
   const handleIntervalToggle = () => {
     setIntervalIsRunning((prev) => !prev);
   };
@@ -88,6 +95,12 @@ const useRandomParagraph = (data, initialWpm = 160) => {
     intervalIsRunning,
     isLinear,
     setIsLinear,
+    wordCount,
+    progress,
+    fontSize, // Hinzugefügt
+    setFontSize, // Hinzugefügt
+    fontColor, // Hinzugefügt
+    setFontColor, // Hinzugefügt
   };
 };
 

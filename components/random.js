@@ -43,16 +43,13 @@ const RandomParagraph = ({ data }) => {
         setIndex(currentIndex);
         setHistory([...history, currentIndex]);
 
-        console.log('time: ', time);
       }, time * 1000);
-      console.log('time: ', time);
       setIntervalId(id);
       return () => clearInterval(id);
     }
   }, [intervalIsRunning, time, data, history, isLinear, index, wpm]);
 
   const handleIntervalChange = (event) => {
-    console.log('Interval: ', event.target.value);
 
     setTime(event.target.value);
   };
@@ -68,11 +65,9 @@ const RandomParagraph = ({ data }) => {
   const handleKeyDown = (event) => {
     if (event.keyCode === 39) {
       // Pfeiltaste nach rechts
-      console.log('Right Arrow Key Pressed');
       handleNextClick(); // Zum nächsten Absatz wechseln
     } else if (event.keyCode === 37) {
       // Pfeiltaste nach links
-      console.log('Left Arrow Key Pressed');
       handlePrevClick(); // Zum vorherigen Absatz wechseln
     }
   };
@@ -101,7 +96,6 @@ const RandomParagraph = ({ data }) => {
   // 6. A function that sets the index state to the next paragraph in the array
   const handleNextClick = () => {
     if (index < data.length - 1) {
-      console.log('next', index);
       setParagraph(data[index + 1].paragraph);
       setIndex(index + 1);
       setHistory([...history, index + 1]);
@@ -111,7 +105,6 @@ const RandomParagraph = ({ data }) => {
   // 7. A function that sets the index state to the previous paragraph in the array
   const handlePrevClick = () => {
     if (index > 0) {
-      console.log('Prev', index);
       setParagraph(data[index - 1].paragraph);
       setIndex(index - 1);
       setHistory([...history, index - 1]);

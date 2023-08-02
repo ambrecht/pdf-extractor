@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { promises as fs } from 'fs';
 import formidable, { File } from 'formidable'; // Import formidable
 import pdf from 'pdf-parse'; // Import pdf-parse
-import extractParas from '../../utils/para';
+import extractParas from '../../utils/extractParagraphs';
 
 export const config = {
   // Disable body parsing

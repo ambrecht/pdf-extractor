@@ -11,6 +11,9 @@ const ControlPanel = ({
   intervalIsRunning,
   isLinear,
   setIsLinear,
+  wordCount,
+  setFontSize,
+  setFontColor,
 }) => {
   return (
     <div className="bg-white p-4 shadow-md">
@@ -51,13 +54,29 @@ const ControlPanel = ({
           min="50"
           max="1000"
           value={wpm}
-          onChange={(e) => setWpm(e.target.value)}
+          onChange={(e) => setWpm(parseInt(e.target.value))}
           className="text-lg p-2 border rounded"
         />
         <h1 className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400">
-          Sekunden{time}
+          {time} Sekunden bei {wordCount} Wörtern
         </h1>
       </div>
+      <label className="text-lg p-2">Font Size:</label>
+      <select
+        onChange={(e) => setFontSize(e.target.value)}
+        className="text-lg p-2 border rounded"
+      >
+        <option value="text-5xl">Large</option>
+        <option value="text-3xl">Medium</option>
+        <option value="text-xl">Small</option>
+      </select>
+
+      <label className="text-lg p-2">Font Color:</label>
+      <input
+        type="color"
+        onChange={(e) => setFontColor(e.target.value)}
+        className="text-lg p-2 border rounded"
+      />
     </div>
   );
 };

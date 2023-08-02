@@ -9,7 +9,6 @@ const Index = () => {
       .then((data) => setDate(data))
       .catch((error) => console.error(error));
   }, []);
-  console.log(date);
   return (
     <div>
       <p>Current date: {date}</p>
