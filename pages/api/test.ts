@@ -5,7 +5,6 @@ import EPub from 'epub';
 import extractParas from '../../utils/para';
 import fs from 'fs';
 import pdf from 'pdf-parse';
-import { JSDOM } from 'jsdom';
 
 export const config = {
   api: {
@@ -82,17 +81,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           console.error(error);
           // Error handling if needed
         }
-      } else if (mimetype.startsWith('text/html') || extension === 'html') {
-        // Handle HTML
-        const html = fs.readFileSync(file[1].filepath, 'utf-8');
-        const dom = new JSDOM(html);
-        const text = dom.window.document.body.textContent;
-        final = await extractParas(text);
-      } else {
-        res
-          .status(400)
-          .json({ status: 'fail', message: 'Unsupported file type' });
-        return;
       }
     }
   }
