@@ -41,7 +41,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     return;
   });
 
-  if (files && files.length) {
+  if (files && files.length > 0) {
     for (const file of files) {
       const mimetype = file[1].mimetype;
       console.log('file88', mimetype);
