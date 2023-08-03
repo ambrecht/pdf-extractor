@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable, { File } from 'formidable';
-import { fileTypeFromFile } from 'file-type';
 import path from 'path';
 import EPub from 'epub';
 import extractParas from '../../utils/para';
@@ -44,11 +43,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (files && files.length > 0) {
     for (const file of files) {
       const mimetype = file[1].mimetype;
-      console.log('file88', mimetype);
-      const type = await fileTypeFromFile(file[1].filepath);
       const extension = path.extname(file[1].filepath).substring(1);
 
-      if (type?.mime === 'application/pdf' || extension === 'pdf') {
+      if (mimetype.startsWith('application/pdf') || extension === 'pdf') {
         // Handle PDF
         const dataBuffer = fs.readFileSync(file[1].filepath);
         const pdfData = await pdf(dataBuffer);
@@ -57,7 +54,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         // Handle TXT
         const text = fs.readFileSync(file[1].filepath, 'utf-8');
         final = await extractParas(text);
-      } else if (type?.ext === 'epub' || extension === 'epub') {
+      } else if (mimetype === 'epub' || extension === 'epub') {
         const book = new EPub(file[1].filepath);
 
         try {
@@ -85,7 +82,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
           console.error(error);
           // Error handling if needed
         }
-      } else if (type?.mime.startsWith('text/html') || extension === 'html') {
+      } else if (mimetype.startsWith('text/html') || extension === 'html') {
         // Handle HTML
         const html = fs.readFileSync(file[1].filepath, 'utf-8');
         const dom = new JSDOM(html);
