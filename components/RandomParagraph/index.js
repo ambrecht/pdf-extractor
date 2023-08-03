@@ -2,6 +2,7 @@ import React from 'react';
 import ParagraphDisplay from './ParagraphDisplay';
 import ControlPanel from './ControlPanel';
 import useRandomParagraph from '../../hooks/useRandomParagraph';
+import HistoryTable from '../historyTable';
 
 const RandomParagraph = ({ data }) => {
   const {
@@ -22,16 +23,10 @@ const RandomParagraph = ({ data }) => {
     setFontSize,
     fontColor,
     setFontColor,
+    history,
   } = useRandomParagraph(data);
   return (
     <div className="flex flex-col h-full">
-      <ParagraphDisplay
-        paragraphs={paragraphs}
-        progress={progress}
-        time={time}
-        fontSize={fontSize}
-        fontColor={fontColor}
-      />
       <ControlPanel
         handleNewParagraph={handleNewParagraph}
         handleIntervalToggle={handleIntervalToggle} // Diese Funktion wird als Prop übergeben
@@ -46,6 +41,13 @@ const RandomParagraph = ({ data }) => {
         wordCount={wordCount}
         setFontSize={setFontSize}
         setFontColor={setFontColor}
+      />
+      <ParagraphDisplay
+        paragraphs={paragraphs}
+        progress={progress}
+        time={time}
+        fontSize={fontSize}
+        fontColor={fontColor}
       />
     </div>
   );

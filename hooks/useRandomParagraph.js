@@ -13,6 +13,7 @@ const useRandomParagraph = (data, initialWpm = 160) => {
   const [progress, setProgress] = useState(0);
   const [fontSize, setFontSize] = useState('text-5xl');
   const [fontColor, setFontColor] = useState('gray');
+  const [history, setHistory] = useState([]);
 
   useEffect(() => {
     const newIndex = isLinear ? 0 : Math.floor(Math.random() * data.length);
@@ -42,7 +43,11 @@ const useRandomParagraph = (data, initialWpm = 160) => {
         } else {
           currentIndex = Math.floor(Math.random() * data.length);
         }
-        setIndex(currentIndex);
+        setIndex((prevIndex) => {
+          // Aktualisieren Sie den Verlauf, wenn der Index geändert wird
+          setHistory((prevHistory) => [...prevHistory, currentIndex]);
+          return currentIndex;
+        });
       }, time * 1000);
 
       return () => clearInterval(id);
@@ -101,6 +106,7 @@ const useRandomParagraph = (data, initialWpm = 160) => {
     setFontSize, // Hinzugefügt
     fontColor, // Hinzugefügt
     setFontColor, // Hinzugefügt
+    history,
   };
 };
 

@@ -1,6 +1,6 @@
 ControlPanel.js:
 
-import React from 'react';
+import React, { useState } from 'react';
 
 const ControlPanel = ({
   handleNewParagraph,
@@ -17,68 +17,82 @@ const ControlPanel = ({
   setFontSize,
   setFontColor,
 }) => {
+  const [isVisible, setIsVisible] = useState(true);
   return (
-    <div className="bg-white p-4 shadow-md">
-      <div className="flex flex-wrap justify-center space-x-2">
-        <button
-          onClick={handleNewParagraph}
-          className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
-        >
-          New Paragraph
-        </button>
-        <button
-          onClick={handleIntervalToggle}
-          className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
-        >
-          {intervalIsRunning ? 'Stop Interval' : 'Start Interval'}
-        </button>
-        <button
-          onClick={() => setIsLinear(!isLinear)}
-          className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
-        >
-          {isLinear ? 'Deactivate Linear' : 'Activate Linear'}
-        </button>
-        <button
-          onClick={handlePrevClick}
-          className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400"
-        >
-          Zurück
-        </button>
-        <button
-          onClick={handleNextClick}
-          className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400"
-        >
-          Vor
-        </button>
-        <label className="text-lg p-2">Words per Minute:</label>
-        <input
-          type="number"
-          min="50"
-          max="1000"
-          value={wpm}
-          onChange={(e) => setWpm(parseInt(e.target.value))}
-          className="text-lg p-2 border rounded"
-        />
-        <h1 className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400">
-          {time} Sekunden bei {wordCount} Wörtern
-        </h1>
-      </div>
-      <label className="text-lg p-2">Font Size:</label>
-      <select
-        onChange={(e) => setFontSize(e.target.value)}
-        className="text-lg p-2 border rounded"
+    <div className="relative">
+      {/* Schaltfläche zum Ein-/Ausblenden des Panels */}
+      <button
+        onClick={() => setIsVisible(!isVisible)}
+        className="absolute top-0 right-0 bg-gray-500 text-white p-2"
       >
-        <option value="text-5xl">Large</option>
-        <option value="text-3xl">Medium</option>
-        <option value="text-xl">Small</option>
-      </select>
+        {isVisible ? 'Hide' : 'Show'}
+      </button>
+      {isVisible && (
+        <div className="bg-white p-4 shadow-md">
+          <div className="bg-white p-4 shadow-md">
+            <div className="flex flex-wrap justify-center space-x-2">
+              <button
+                onClick={handleNewParagraph}
+                className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+              >
+                New Paragraph
+              </button>
+              <button
+                onClick={handleIntervalToggle}
+                className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+              >
+                {intervalIsRunning ? 'Stop Interval' : 'Start Interval'}
+              </button>
+              <button
+                onClick={() => setIsLinear(!isLinear)}
+                className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+              >
+                {isLinear ? 'Deactivate Linear' : 'Activate Linear'}
+              </button>
+              <button
+                onClick={handlePrevClick}
+                className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400"
+              >
+                Zurück
+              </button>
+              <button
+                onClick={handleNextClick}
+                className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400"
+              >
+                Vor
+              </button>
+              <label className="text-lg p-2">Words per Minute:</label>
+              <input
+                type="number"
+                min="50"
+                max="1000"
+                value={wpm}
+                onChange={(e) => setWpm(parseInt(e.target.value))}
+                className="text-lg p-2 border rounded"
+              />
+              <h1 className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400">
+                {time} Sekunden bei {wordCount} Wörtern
+              </h1>
+            </div>
+            <label className="text-lg p-2">Font Size:</label>
+            <select
+              onChange={(e) => setFontSize(e.target.value)}
+              className="text-lg p-2 border rounded"
+            >
+              <option value="text-5xl">Large</option>
+              <option value="text-3xl">Medium</option>
+              <option value="text-xl">Small</option>
+            </select>
 
-      <label className="text-lg p-2">Font Color:</label>
-      <input
-        type="color"
-        onChange={(e) => setFontColor(e.target.value)}
-        className="text-lg p-2 border rounded"
-      />
+            <label className="text-lg p-2">Font Color:</label>
+            <input
+              type="color"
+              onChange={(e) => setFontColor(e.target.value)}
+              className="text-lg p-2 border rounded"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -92,6 +106,7 @@ import React from 'react';
 import ParagraphDisplay from './ParagraphDisplay';
 import ControlPanel from './ControlPanel';
 import useRandomParagraph from '../../hooks/useRandomParagraph';
+import HistoryTable from '../historyTable';
 
 const RandomParagraph = ({ data }) => {
   const {
@@ -112,16 +127,10 @@ const RandomParagraph = ({ data }) => {
     setFontSize,
     fontColor,
     setFontColor,
+    history,
   } = useRandomParagraph(data);
   return (
     <div className="flex flex-col h-full">
-      <ParagraphDisplay
-        paragraphs={paragraphs}
-        progress={progress}
-        time={time}
-        fontSize={fontSize}
-        fontColor={fontColor}
-      />
       <ControlPanel
         handleNewParagraph={handleNewParagraph}
         handleIntervalToggle={handleIntervalToggle} // Diese Funktion wird als Prop übergeben
@@ -137,6 +146,15 @@ const RandomParagraph = ({ data }) => {
         setFontSize={setFontSize}
         setFontColor={setFontColor}
       />
+      <ParagraphDisplay
+        paragraphs={paragraphs}
+        progress={progress}
+        time={time}
+        fontSize={fontSize}
+        fontColor={fontColor}
+      />
+
+      <HistoryTable history={history} data={data}></HistoryTable>
     </div>
   );
 };
@@ -146,11 +164,9 @@ export default RandomParagraph;
 
 ParagraphDisplay.js:
 
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import scrollIntoViewIfNeeded from 'scroll-into-view-if-needed';
 import { cleanText } from '../../utils/cleanText';
-import bezier from 'bezier-easing';
-
-const cubicBezierEasing = bezier(0.25, 0.25, 0.75, 0.75);
 
 const ParagraphDisplay = ({
   paragraphs,
@@ -160,79 +176,37 @@ const ParagraphDisplay = ({
   fontColor,
 }) => {
   const adjustedProgress = progress * (time / (time - 1));
-  const scrollContainerRef = useRef(null);
-  const currentParagraphRef = useRef(null);
-  const currentCharRef = useRef(null);
+  const targetCharRef = useRef(null);
 
-  const centerParagraph = () => {
-    if (scrollContainerRef.current && currentParagraphRef.current) {
-      const container = scrollContainerRef.current;
-      const currentParagraph = currentParagraphRef.current;
-      const containerHeight = container.clientHeight;
-      const paragraphHeight = currentParagraph.clientHeight;
-      const containerTop = container.getBoundingClientRect().top;
-      const paragraphTop = currentParagraph.getBoundingClientRect().top;
-
-      if (
-        paragraphHeight > containerHeight ||
-        paragraphTop - containerTop !== containerHeight / 2
-      ) {
-        const scrollPosition =
-          paragraphTop -
-          containerTop +
-          containerHeight / 2 -
-          paragraphHeight / 2;
-        container.scrollTop = scrollPosition;
-      }
+  useEffect(() => {
+    if (targetCharRef.current) {
+      scrollIntoViewIfNeeded(targetCharRef.current, {
+        scrollMode: 'if-needed',
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center',
+      });
     }
-  };
-
-  const focusCurrentChar = () => {
-    if (scrollContainerRef.current && currentCharRef.current) {
-      const container = scrollContainerRef.current;
-      const currentChar = currentCharRef.current;
-      const charTop = currentChar.getBoundingClientRect().top;
-      const containerTop = container.getBoundingClientRect().top;
-      const containerBottom = container.getBoundingClientRect().bottom;
-
-      if (charTop < containerTop || charTop > containerBottom) {
-        container.scrollTop += charTop - (containerTop + containerBottom) / 2;
-      }
-    }
-  };
-
-  useEffect(centerParagraph, [paragraphs]);
-  useEffect(focusCurrentChar, [adjustedProgress]);
+  }, [adjustedProgress]);
 
   return (
-    <div
-      ref={scrollContainerRef}
-      className="overflow-hidden flex-grow flex flex-col justify-center"
-    >
+    <div className="overflow-y-scroll flex-grow">
       {cleanText(paragraphs).map((paragraph, idx) => (
         <p
-          ref={idx === 1 ? currentParagraphRef : null}
           key={idx}
           className={`${fontSize} font-semibold text-center my-8 mx-10 leading-relaxed`}
           style={{ color: idx === 1 ? fontColor : 'gray' }}
         >
           {paragraph.split('').map((char, charIdx) => {
             const charProgress = (charIdx / paragraph.split('').length) * 100;
-            const easedProgress =
-              cubicBezierEasing(adjustedProgress / 100) * 100;
+            const isTargetChar = idx === 1 && charProgress < adjustedProgress;
+
             return (
               <span
-                ref={
-                  idx === 1 && charProgress < easedProgress
-                    ? currentCharRef
-                    : null
-                }
+                ref={isTargetChar ? targetCharRef : null}
                 key={charIdx}
                 style={{
-                  color:
-                    idx === 1 && charProgress < easedProgress
-                      ? 'white'
-                      : 'gray',
+                  color: isTargetChar ? 'white' : 'gray',
                 }}
               >
                 {char}

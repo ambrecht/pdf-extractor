@@ -1,63 +1,106 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { promises as fs } from 'fs';
-import formidable, { File } from 'formidable'; // Import formidable
-import pdf from 'pdf-parse'; // Import pdf-parse
-import extractParas from '../../utils/extractParagraphs';
+import formidable, { File } from 'formidable';
+import { fileTypeFromFile } from 'file-type';
+import path from 'path';
+import EPub from 'epub';
+import extractParas from '../../utils/para';
+import fs from 'fs';
+import pdf from 'pdf-parse';
+import { JSDOM } from 'jsdom';
 
 export const config = {
-  // Disable body parsing
   api: {
     bodyParser: false,
   },
 };
 
-type ProcessedFiles = Array<[string, File]>; // Define type for files
+type ProcessedFiles = Array<[string, File]>;
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  let status = 200,
-    resultBody = { status: 'ok', message: 'Files were uploaded successfully' }; // Set default response status and body
+  let status = 200;
+  let final = [];
 
-  /* Get files using formidable */
-  const files = await new Promise<ProcessedFiles | undefined>( // Create a promise to get files
+  const files = await new Promise<ProcessedFiles | undefined>(
     (resolve, reject) => {
-      const form = new formidable.IncomingForm(); // Create an instance of formidable
-      const files: ProcessedFiles = []; // Initialize array for files
-      form.on('file', function (field, file) {
-        // Add a listener for each file
-        files.push([field, file]); // Add file to array
-      });
-      form.on('end', () => resolve(files)); // Finish promise on end event
-      form.on('error', (err) => reject(err)); // Finish promise on error event
-      form.parse(req, () => {
-        // Start parsing of the request
-        //
+      const form = new formidable.IncomingForm();
+      form.parse(req, (err, fields, files) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        const processedFiles: ProcessedFiles = Object.entries(files).map(
+          ([field, file]) => [field, file as File],
+        );
+        resolve(processedFiles);
       });
     },
   ).catch((e) => {
-    console.log(e);
+    console.error(e);
     status = 500;
-    resultBody = {
-      status: 'fail',
-      message: 'Upload error',
-    };
+    res.status(status).json({ status: 'fail', message: 'Upload error' });
+    return;
   });
-  let final = [];
-  if (files?.length) {
-    // Check if files were uploaded
 
-    /* Move uploaded files to directory */
+  if (files && files.length) {
     for (const file of files) {
-      // Get text from the PDF file
-      const srcToFile = async (src: string) => await fs.readFile(src);
-      const fileToBuffer = () => srcToFile(file[1].filepath);
-      const data = await pdf(await fileToBuffer()); // Get text from the PDF file
-      final = await extractParas(data.text); // Extract paragraphs from the text
-      console.log(extractParas(data.text)); // Log text to the console
-      // Iterate over array with files
+      const mimetype = file[1].mimetype;
+      console.log('file88', mimetype);
+      const type = await fileTypeFromFile(file[1].filepath);
+      const extension = path.extname(file[1].filepath).substring(1);
+
+      if (type?.mime === 'application/pdf' || extension === 'pdf') {
+        // Handle PDF
+        const dataBuffer = fs.readFileSync(file[1].filepath);
+        const pdfData = await pdf(dataBuffer);
+        final = await extractParas(pdfData.text);
+      } else if (mimetype.startsWith('text/')) {
+        // Handle TXT
+        const text = fs.readFileSync(file[1].filepath, 'utf-8');
+        final = await extractParas(text);
+      } else if (type?.ext === 'epub' || extension === 'epub') {
+        const book = new EPub(file[1].filepath);
+
+        try {
+          await new Promise<void>((resolve, reject) => {
+            book.on('end', async function () {
+              const chapters = book.flow;
+              const promises = chapters.map(
+                (chapter) =>
+                  new Promise<string>((resolveChapter, rejectChapter) => {
+                    book.getChapter(chapter.id, function (err, text) {
+                      if (err) rejectChapter(err);
+                      else resolveChapter(text);
+                    });
+                  }),
+              );
+
+              const texts = await Promise.all(promises);
+              const combinedText = texts.join('\n');
+              final = await extractParas(combinedText);
+              resolve();
+            });
+            book.parse();
+          });
+        } catch (error) {
+          console.error(error);
+          // Error handling if needed
+        }
+      } else if (type?.mime.startsWith('text/html') || extension === 'html') {
+        // Handle HTML
+        const html = fs.readFileSync(file[1].filepath, 'utf-8');
+        const dom = new JSDOM(html);
+        const text = dom.window.document.body.textContent;
+        final = await extractParas(text);
+      } else {
+        res
+          .status(400)
+          .json({ status: 'fail', message: 'Unsupported file type' });
+        return;
+      }
     }
   }
 
-  res.status(status).json(final); // Send a response
+  res.status(status).json(final);
 };
 
 export default handler;

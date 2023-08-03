@@ -8,6 +8,7 @@ const UploadPDF = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [response, setResponse] = useState(null);
+  const [showUpload, setShowUpload] = useState(true); // Zustand für das Anzeigen des Upload-Formulars
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -28,6 +29,7 @@ const UploadPDF = () => {
         },
       });
       setResponse(res.data);
+      setShowUpload(false); // Blende das Upload-Formular aus, sobald die PDF-Datei hochgeladen wurde
     } catch (err) {
       setError(err.message);
     } finally {
@@ -37,16 +39,40 @@ const UploadPDF = () => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit}>
-        <input type="file" onChange={handleFileChange} />
-        <button type="submit">Upload PDF</button>
-      </form>
+      {showUpload ? (
+        <form onSubmit={handleSubmit} className="p-4 border rounded">
+          <button
+            onClick={() => setShowUpload(!showUpload)}
+            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-400"
+          >
+            x
+          </button>
+          <label className="block mb-2">Select PDF:</label>
+          <input
+            type="file"
+            onChange={handleFileChange}
+            className="p-2 border rounded mb-2"
+          />
+          <button
+            type="submit"
+            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-400"
+          >
+            Upload PDF
+          </button>
+        </form>
+      ) : (
+        <button
+          onClick={() => setShowUpload(!showUpload)}
+          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-400"
+        >
+          {showUpload ? 'Hide Upload' : 'Show Upload'}
+        </button>
+      )}
       {loading && <p>Uploading...</p>}
       {error && <p>Error: {error}</p>}
-      {response && <p>Response: Das Ding ging durch!</p>}
       {response && <RandomParagraph data={response} />}
 
-      <KeyDown></KeyDown>
+      <KeyDown />
     </div>
   );
 };
