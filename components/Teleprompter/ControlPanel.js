@@ -18,7 +18,6 @@ const ControlPanel = ({
   const [isVisible, setIsVisible] = useState(true);
   return (
     <div className="relative">
-      {/* Schaltfläche zum Ein-/Ausblenden des Panels */}
       <button
         onClick={() => setIsVisible(!isVisible)}
         className="absolute top-0 right-0 bg-gray-500 text-white p-2"
@@ -26,7 +25,7 @@ const ControlPanel = ({
         {isVisible ? 'Hide' : 'Show'}
       </button>
       {isVisible && (
-        <div className="bg-white p-4 shadow-md">
+        <div className="bg-white p-4 shadow-md space-y-4 sm:space-y-0">
           <div className="bg-white p-4 shadow-md">
             <div className="flex flex-wrap justify-center space-x-2">
               <button

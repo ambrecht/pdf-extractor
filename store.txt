@@ -1,0 +1,316 @@
+/transpile
+
+actions.js:
+
+
+export const setWpm = (wpm) => ({
+  type: 'SET_WPM',
+  payload: { wpm },
+});
+
+export const setParagraphs = (paragraphs) => ({
+  type: 'SET_PARAGRAPHS',
+  payload: { paragraphs },
+});
+
+export const setIndex = (index) => ({
+  type: 'SET_INDEX',
+  payload: { index },
+});
+
+export const setTime = (time) => ({
+  type: 'SET_TIME',
+  payload: { time },
+});
+
+export const toggleIntervalRunning = () => ({
+  type: 'TOGGLE_INTERVAL_RUNNING',
+});
+
+export const toggleLinearMode = () => ({
+  type: 'TOGGLE_LINEAR_MODE',
+});
+
+export const setWordCount = (wordCount) => ({
+  type: 'SET_WORD_COUNT',
+  payload: { wordCount },
+});
+
+export const setProgress = (progress) => ({
+  type: 'SET_PROGRESS',
+  payload: { progress },
+});
+
+export const setFontSize = (fontSize) => ({
+  type: 'SET_FONT_SIZE',
+  payload: { fontSize },
+});
+
+export const setFontColor = (fontColor) => ({
+  type: 'SET_FONT_COLOR',
+  payload: { fontColor },
+});
+
+export const setHistory = (history) => ({
+  type: 'SET_HISTORY',
+  payload: { history },
+});
+
+export const handleNewParagraph = () => ({
+  type: 'HANDLE_NEW_PARAGRAPH',
+});
+
+export const handleNextClick = () => ({
+  type: 'HANDLE_NEXT_CLICK',
+});
+
+export const handlePrevClick = () => ({
+  type: 'HANDLE_PREV_CLICK',
+});
+
+export const handleIntervalToggle = () => ({
+  type: 'HANDLE_INTERVAL_TOGGLE',
+});
+
+export const updateParagraphsAndTime = (payload) => ({
+  type: 'UPDATE_PARAGRAPHS_AND_TIME',
+  payload,
+});
+
+export const updateProgress = (progress) => ({
+  type: 'UPDATE_PROGRESS',
+  payload: { progress },
+});
+
+export const setTheme = (theme) => ({
+  type: 'SET_THEME',
+  payload: { theme },
+});
+
+export const setTextAlignment = (textAlignment) => ({
+  type: 'SET_TEXT_ALIGNMENT',
+  payload: { textAlignment },
+});
+
+export const setBackgroundColor = (backgroundColor) => ({
+  type: 'SET_BACKGROUND_COLOR',
+  payload: { backgroundColor },
+});
+
+export const setScrollSpeed = (scrollSpeed) => ({
+  type: 'SET_SCROLL_SPEED',
+  payload: { scrollSpeed },
+});
+
+
+reducers.js:
+
+const initialState = {
+  wpm: 0, // Wörter pro Minute
+  paragraphs: [],
+  index: null,
+  time: 0,
+  intervalIsRunning: false,
+  isLinear: false,
+  wordCount: 0,
+  progress: 0,
+  fontSize: 16, // Beispielwert
+  fontColor: 'black', // Beispielwert
+  history: [],
+  theme: 'light', // Beispielwert
+  textAlignment: 'left', // Beispielwert
+  backgroundColor: 'white', // Beispielwert
+  scrollSpeed: 1, // Beispielwert
+  data: [], // Beispielwert, wenn Sie Daten im Zustand haben
+};
+
+const reducer = (state = initialState, { type, payload } = {}) => {
+  switch (type) {
+    case 'SET_WPM':
+      return { ...state, wpm: payload.wpm };
+
+    case 'SET_PARAGRAPHS':
+      return { ...state, paragraphs: payload.paragraphs };
+
+    case 'SET_INDEX':
+      return { ...state, index: payload.index };
+
+    case 'SET_TIME':
+      return { ...state, time: payload.time };
+
+    case 'TOGGLE_INTERVAL_RUNNING':
+      return { ...state, intervalIsRunning: !state.intervalIsRunning };
+
+    case 'TOGGLE_LINEAR_MODE':
+      return { ...state, isLinear: !state.isLinear };
+
+    case 'SET_WORD_COUNT':
+      return { ...state, wordCount: payload.wordCount };
+
+    case 'SET_PROGRESS':
+      return { ...state, progress: payload.progress };
+
+    case 'SET_FONT_SIZE':
+      return { ...state, fontSize: payload.fontSize };
+
+    case 'SET_FONT_COLOR':
+      return { ...state, fontColor: payload.fontColor };
+
+    case 'SET_HISTORY':
+      return { ...state, history: payload.history };
+
+    case 'HANDLE_NEW_PARAGRAPH':
+      const randomIndex = Math.floor(Math.random() * state.data.length);
+      return { ...state, index: randomIndex };
+
+    case 'HANDLE_NEXT_CLICK':
+      if (state.index < state.data.length - 1) {
+        return { ...state, index: state.index + 1 };
+      }
+      return state;
+
+    case 'HANDLE_PREV_CLICK':
+      if (state.index > 0) {
+        return { ...state, index: state.index - 1 };
+      }
+      return state;
+
+    case 'HANDLE_INTERVAL_TOGGLE':
+      return { ...state, intervalIsRunning: !state.intervalIsRunning };
+
+    case 'UPDATE_PARAGRAPHS_AND_TIME':
+      return {
+        ...state,
+        paragraphs: payload.paragraphs,
+        time: payload.time,
+        wordCount: payload.wordCount,
+        progress: payload.progress,
+      };
+
+    case 'UPDATE_PROGRESS':
+      const newProgress = payload.progress > 100 ? 100 : payload.progress;
+      return { ...state, progress: newProgress };
+
+    case 'SET_THEME':
+      return { ...state, theme: payload.theme };
+
+    case 'SET_TEXT_ALIGNMENT':
+      return { ...state, textAlignment: payload.textAlignment };
+
+    case 'SET_BACKGROUND_COLOR':
+      return { ...state, backgroundColor: payload.backgroundColor };
+
+    case 'SET_SCROLL_SPEED':
+      return { ...state, scrollSpeed: payload.scrollSpeed };
+
+    default:
+      return state;
+  }
+};
+
+export default reducer;
+
+
+selectors.js:
+
+// selectors.js
+
+export const getWpm = (state) => state.wpm;
+export const getParagraphs = (state) => state.paragraphs;
+export const getIndex = (state) => state.index;
+export const getTime = (state) => state.time;
+export const getIntervalIsRunning = (state) => state.intervalIsRunning;
+export const getIsLinear = (state) => state.isLinear;
+export const getWordCount = (state) => state.wordCount;
+export const getProgress = (state) => state.progress;
+export const getFontSize = (state) => state.fontSize;
+export const getFontColor = (state) => state.fontColor;
+export const getHistory = (state) => state.history;
+export const getTheme = (state) => state.theme;
+export const getTextAlignment = (state) => state.textAlignment;
+export const getBackgroundColor = (state) => state.backgroundColor;
+export const getScrollSpeed = (state) => state.scrollSpeed;
+export const getData = (state) => state.data; // Wenn Sie Daten im Zustand haben
+
+
+store.js:
+
+import { createStore, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
+import reducer from './reducer'; // Pfad zu Ihrem Reducer
+
+const store = createStore(reducer, applyMiddleware(thunk));
+
+export default store;
+
+
+customMiddleware.js:
+
+import estimateReadingTime from '../utils/readingTime';
+import countWords from '../utils/wordCount';
+import {
+  updateParagraphsAndTime,
+  setIndex,
+  setHistory,
+  updateProgress,
+} from './actions'; // Importieren Sie die fehlenden Aktionsersteller
+
+export const updateParagraphsAndProgress = () => (dispatch, getState) => {
+  const state = getState(); // Zugriff auf den Zustand direkt, ohne .teleprompter
+  const { index, wpm, data, intervalIsRunning, time } = state;
+
+  if (index !== null) {
+    const selectedParagraphs = [
+      data[index - 1]?.paragraph || '',
+      data[index]?.paragraph || '',
+      data[index + 1]?.paragraph || '',
+    ];
+    const newTime = estimateReadingTime(selectedParagraphs[1], wpm);
+    const wordCount = countWords(selectedParagraphs[1]);
+    dispatch(
+      updateParagraphsAndTime({
+        paragraphs: selectedParagraphs,
+        time: newTime,
+        wordCount,
+        progress: 0,
+      }),
+    );
+  }
+
+  if (intervalIsRunning) {
+    let currentIndex = index;
+    const id = setInterval(() => {
+      if (state.isLinear) {
+        currentIndex = (currentIndex + 1) % data.length;
+      } else {
+        currentIndex = Math.floor(Math.random() * data.length);
+      }
+      dispatch(setIndex({ index: currentIndex }));
+      dispatch(setHistory({ history: [...state.history, currentIndex] }));
+    }, time * 1000);
+
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const elapsedTime = (Date.now() - startTime) / 1000;
+      const newProgress = (elapsedTime / (time - 1)) * 100;
+      dispatch(
+        updateProgress({ progress: newProgress > 100 ? 100 : newProgress }),
+      );
+    }, 1000 / 60);
+
+    return () => {
+      clearInterval(id);
+      clearInterval(interval);
+    };
+  }
+};
+
+
+anotherFeature.js:
+
+
+
+teleprompter.js:
+
+
+

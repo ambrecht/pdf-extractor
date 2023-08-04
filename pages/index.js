@@ -1,11 +1,11 @@
-import PDFInput from '../components/PDFInput';
-import Date from '../components/date.js';
-import Tree from '../components/tree.js';
+import Teleprompter from '../components/Teleprompter/index';
+import { Provider } from 'react-redux';
+import store from '../store/store';
 
 export default function Home() {
   return (
-    <>
-      <PDFInput></PDFInput>
-    </>
+    <Provider store={store}>
+      <Teleprompter></Teleprompter>
+    </Provider>
   );
 }
