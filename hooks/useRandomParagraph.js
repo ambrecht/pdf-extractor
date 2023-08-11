@@ -47,7 +47,6 @@ const useRandomParagraph = (data, initialWpm = 160) => {
         data[index]?.paragraph || '',
         data[index + 1]?.paragraph || '',
       ];
-      console.log('inside hook', selectedParagraphs);
       dispatch(setParagraphs(selectedParagraphs));
       dispatch(setTime(estimateReadingTime(selectedParagraphs[1], wpm)));
       dispatch(setWordCount(countWords(selectedParagraphs[1])));
