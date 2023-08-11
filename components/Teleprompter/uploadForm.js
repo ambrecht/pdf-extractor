@@ -1,48 +1,41 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setFile, uploadFile } from '../../store/uploadSlice';
 
-const UploadPDF = ({ onResponse }) => {
-  const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [response, setResponse] = useState(null);
+import { path } from 'ramda';
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
+const UploadPDF = () => {
+  const dispatch = useDispatch();
+  const file = useSelector((state) => path(['upload', 'file'], state));
+  const loading = useSelector((state) => path(['upload', 'loading'], state));
+  const error = useSelector((state) => path(['upload', 'error'], state));
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  const handleFileChange = useCallback(
+    (e) => {
+      if (e.target.files[0]) {
+        dispatch(setFile(e.target.files[0]));
+      }
+    },
+    [dispatch],
+  );
 
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const res = await axios.post('/api/test', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      setResponse(res.data);
-      onResponse(res.data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleSubmit = useCallback(
+    (e) => {
+      e.preventDefault();
+      dispatch(uploadFile(file));
+    },
+    [file, dispatch],
+  );
 
   return (
     <div>
       <form onSubmit={handleSubmit}>
         <input type="file" onChange={handleFileChange} />
-        <button type="submit">Upload PDF</button>
+        <button type="submit">Upload</button>
       </form>
       {loading && <p>Uploading...</p>}
       {error && <p>Error: {error}</p>}
-      {response && <p>Response: Das Ding ging durch!</p>}
+      {file && <p>Response: Das Ding ging durch!</p>}
     </div>
   );
 };

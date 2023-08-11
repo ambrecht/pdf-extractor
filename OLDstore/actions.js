@@ -5,9 +5,9 @@ export const setWpm = (wpm) => ({
   payload: { wpm },
 });
 
-export const setParagraphs = (paragraphs) => ({
+export const setParagraphs = (response) => ({
   type: actionTypes.SET_PARAGRAPHS,
-  payload: { paragraphs },
+  payload: { response },
 });
 
 export const setIndex = (index) => ({
@@ -94,7 +94,45 @@ export const setBackgroundColor = (backgroundColor) => ({
   payload: { backgroundColor },
 });
 
-export const setScrollSpeed = (scrollSpeed) => ({
-  type: actionTypes.SET_SCROLL_SPEED,
-  payload: { scrollSpeed },
+export const toggleUpload = () => ({
+  type: actionTypes.TOGGLE_UPLOAD,
+});
+
+export const toggleControlPanel = () => ({
+  type: actionTypes.TOGGLE_CONTROL_PANEL,
+});
+
+export const setFile = (file) => ({
+  type: actionTypes.SET_FILE,
+  payload: { file },
+});
+
+export const setLoading = (loading) => ({
+  type: actionTypes.SET_LOADING,
+  payload: { loading },
+});
+
+export const setError = (error) => ({
+  type: actionTypes.SET_ERROR,
+  payload: { error },
+});
+
+export const setResponse = (response) => ({
+  type: actionTypes.SET_RESPONSE,
+  payload: { response },
+});
+
+export const setShowUpload = (showUpload) => ({
+  type: actionTypes.SET_SHOW_UPLOAD,
+  payload: { showUpload },
+});
+
+export const setShowControlPanel = (showControlPanel) => ({
+  type: actionTypes.SET_SHOW_CONTROL_PANEL,
+  payload: { showControlPanel },
+});
+
+export const setReadingTime = (paragraph, wpm) => ({
+  type: SET_READING_TIME,
+  payload: { paragraph, wpm },
 });

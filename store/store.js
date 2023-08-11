@@ -1,7 +1,18 @@
-import { createStore, applyMiddleware } from 'redux';
-import thunk from 'redux-thunk';
-import reducer from './reducer'; // Pfad zu Ihrem Reducer
+// Verzeichnispfad von store.js ist E:\pdf-extractor\store\store.js:
 
-const store = createStore(reducer, applyMiddleware(thunk));
+import { configureStore } from '@reduxjs/toolkit';
+import teleprompterReducer from './teleprompterSlice';
+import themeReducer from './themeSlice';
+import uploadReducer from './uploadSlice';
+import navigationReducer from './navigationSlice';
+
+const store = configureStore({
+  reducer: {
+    teleprompter: teleprompterReducer,
+    theme: themeReducer,
+    upload: uploadReducer,
+    navigation: navigationReducer, // Neuer Slice hinzugefügt
+  },
+});
 
 export default store;

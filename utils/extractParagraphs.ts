@@ -5,7 +5,9 @@ const extractParas = (text: string) => {
   text = text.replace(/ +/g, ' ').replace(/-\s+/g, '');
 
   // Teilen Sie den Text an Satzzeichen auf, behalten Sie aber Dialogzeichen und Zeilenumbrüche bei
-  const sentences = text.split(/(?<=[.!?])\s+/);
+  const sentences = text
+    .split(/(?<=[.!?])\s+/)
+    .filter((sentence) => sentence.trim() !== '');
 
   // Maximale Wörter pro Absatz
   const maxWordsPerParagraph = 30;
@@ -20,19 +22,23 @@ const extractParas = (text: string) => {
     if (wordCount <= maxWordsPerParagraph) {
       currentParagraph = combinedParagraph;
     } else {
-      paragraphs.push(currentParagraph.trim());
+      if (currentParagraph.trim() !== '') {
+        paragraphs.push(currentParagraph.trim());
+      }
       currentParagraph = sentence;
     }
   });
 
-  // Füge den letzten Absatz hinzu, falls vorhanden
-  if (currentParagraph) paragraphs.push(currentParagraph.trim());
+  // Füge den letzten Absatz hinzu, falls vorhanden und nicht leer
+  if (currentParagraph.trim() !== '') paragraphs.push(currentParagraph.trim());
 
   // Erstelle ein Array von Objekten, jedes mit einer eindeutigen ID und dem formatierten Absatz
-  const paragraphsObjects = paragraphs.map((paragraph) => ({
-    id: crypto.randomUUID(),
-    paragraph: paragraph,
-  }));
+  const paragraphsObjects = paragraphs
+    .filter((paragraph) => paragraph.trim() !== '') // Filtere leere Absätze
+    .map((paragraph) => ({
+      id: crypto.randomUUID(),
+      paragraph: paragraph,
+    }));
 
   return paragraphsObjects;
 };

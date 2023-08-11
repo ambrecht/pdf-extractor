@@ -1,7 +1,13 @@
+import estimateReadingTime from '../utils/readingTime';
+
 const initialState = {
-  wpm: 0, // Wörter pro Minute
+  file: null,
+  loading: false,
+  error: null,
+  response: null,
+  wpm: 140, // Wörter pro Minute
   paragraphs: [],
-  index: null,
+  index: 0,
   time: 0,
   intervalIsRunning: false,
   isLinear: false,
@@ -14,6 +20,8 @@ const initialState = {
   textAlignment: 'left', // Beispielwert
   backgroundColor: 'white', // Beispielwert
   scrollSpeed: 1, // Beispielwert
+  showUpload: false,
+  showControlPanel: false,
   data: [], // Beispielwert, wenn Sie Daten im Zustand haben
 };
 
@@ -23,7 +31,15 @@ const reducer = (state = initialState, { type, payload } = {}) => {
       return { ...state, wpm: payload.wpm };
 
     case 'SET_PARAGRAPHS':
-      return { ...state, paragraphs: payload.paragraphs };
+      const { index } = state;
+      const response = payload.response;
+      console.log('aktion para');
+      const selectedParagraphs = [
+        response[index - 1]?.paragraph || '',
+        response[index]?.paragraph || '',
+        response[index + 1]?.paragraph || '',
+      ];
+      return { ...state, paragraphs: selectedParagraphs };
 
     case 'SET_INDEX':
       return { ...state, index: payload.index };
@@ -53,11 +69,11 @@ const reducer = (state = initialState, { type, payload } = {}) => {
       return { ...state, history: payload.history };
 
     case 'HANDLE_NEW_PARAGRAPH':
-      const randomIndex = Math.floor(Math.random() * state.data.length);
+      const randomIndex = Math.floor(Math.random() * state.response.length);
       return { ...state, index: randomIndex };
 
     case 'HANDLE_NEXT_CLICK':
-      if (state.index < state.data.length - 1) {
+      if (state.index < state.response.length - 1) {
         return { ...state, index: state.index + 1 };
       }
       return state;
@@ -95,6 +111,35 @@ const reducer = (state = initialState, { type, payload } = {}) => {
 
     case 'SET_SCROLL_SPEED':
       return { ...state, scrollSpeed: payload.scrollSpeed };
+
+    case 'TOGGLE_UPLOAD':
+      return { ...state, showUploadForm: !state.showUploadForm };
+
+    case 'SET_SHOW_UPLOAD':
+      return { ...state, showUpload: payload.showUpload };
+
+    case 'SET_SHOW_CONTROL_PANEL':
+      return { ...state, showControlPanel: payload.showControlPanel };
+
+    case 'SET_FILE':
+      return { ...state, file: payload.file };
+
+    case 'SET_LOADING':
+      return { ...state, loading: payload.loading };
+
+    case 'SET_ERROR':
+      return { ...state, error: payload.error };
+
+    case 'SET_RESPONSE':
+      return { ...state, response: payload.response };
+
+    case 'SET_READING_TIME':
+      // Berechne die Zeit mit der Funktion
+      const time = estimateReadingTime(
+        action.payload.paragraph,
+        action.payload.wpm,
+      );
+      return { ...state, time };
 
     default:
       return state;

@@ -1,14 +1,13 @@
 import React, { useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import scrollIntoViewIfNeeded from 'scroll-into-view-if-needed';
 import { cleanText } from '../../utils/cleanText';
 
-const ParagraphDisplay = ({
-  paragraphs,
-  progress,
-  time,
-  fontSize,
-  fontColor,
-}) => {
+const ParagraphDisplay = () => {
+  const paragraphs = useSelector((state) => state.teleprompter.paragraphs);
+  const progress = useSelector((state) => state.teleprompter.progress);
+  const time = useSelector((state) => state.teleprompter.time);
+
   const adjustedProgress = progress * (time / (time - 1));
   const targetCharRef = useRef(null);
 
@@ -28,8 +27,8 @@ const ParagraphDisplay = ({
       {cleanText(paragraphs).map((paragraph, idx) => (
         <p
           key={idx}
-          className={`${fontSize} font-semibold text-center my-8 mx-10 leading-relaxed`}
-          style={{ color: idx === 1 ? fontColor : 'gray' }}
+          className={`16 font-semibold text-center my-8 mx-10 leading-relaxed`}
+          style={{ color: idx === 1 ? 'red' : 'gray' }}
         >
           {paragraph.split('').map((char, charIdx) => {
             const charProgress = (charIdx / paragraph.split('').length) * 100;

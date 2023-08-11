@@ -16,3 +16,9 @@ export const getTextAlignment = (state) => state.textAlignment;
 export const getBackgroundColor = (state) => state.backgroundColor;
 export const getScrollSpeed = (state) => state.scrollSpeed;
 export const getData = (state) => state.data; // Wenn Sie Daten im Zustand haben
+export const getShowUpload = (state) => state.showUpload;
+export const getShowControlPanel = (state) => state.showControlPanel;
+export const getFile = (state) => state.file;
+export const getLoading = (state) => state.loading;
+export const getError = (state) => state.error;
+export const getResponse = (state) => state.response;

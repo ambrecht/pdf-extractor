@@ -1,112 +1,149 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  updateTeleprompterData,
+  setIndex,
+  toggleLinearMode,
+  setWpm,
+  setParagraphs,
+  setTime,
+  toggleIntervalRunning,
+  setWordCount,
+  setProgress,
+  updateParagraphs,
+} from '../store/teleprompterSlice';
 import estimateReadingTime from '../utils/readingTime';
 import countWords from '../utils/wordCount';
 
 const useRandomParagraph = (data, initialWpm = 160) => {
-  const [wpm, setWpm] = useState(initialWpm);
-  const [paragraphs, setParagraphs] = useState([]);
-  const [index, setIndex] = useState(null);
-  const [time, setTime] = useState(5);
-  const [intervalIsRunning, setIntervalIsRunning] = useState(false);
-  const [isLinear, setIsLinear] = useState(true);
-  const [wordCount, setWordCount] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [fontSize, setFontSize] = useState('text-5xl');
-  const [fontColor, setFontColor] = useState('gray');
-  const [history, setHistory] = useState([]);
+  const dispatch = useDispatch();
+  const wpm = useSelector((state) => state.teleprompter.wpm);
+  const index = useSelector((state) => state.teleprompter.index);
+  const isLinear = useSelector((state) => state.teleprompter.isLinear);
+  const paragraphs = useSelector((state) => state.teleprompter.paragraphs);
+  const time = useSelector((state) => state.teleprompter.time);
+  const intervalIsRunning = useSelector(
+    (state) => state.teleprompter.intervalIsRunning,
+  );
+  const wordCount = useSelector((state) => state.teleprompter.wordCount);
+  const progress = useSelector((state) => state.teleprompter.progress);
+  const uploadResponse = useSelector((state) => state.upload.response);
+
+  // State für die verstrichene Zeit und den Fortschritt des Intervalls
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [intervalProgress, setIntervalProgress] = useState(0);
 
   useEffect(() => {
-    const newIndex = isLinear ? 0 : Math.floor(Math.random() * data.length);
-    setIndex(newIndex);
-  }, [isLinear, data.length]);
+    if (uploadResponse.length > 0) {
+      const newIndex = isLinear ? 0 : Math.floor(Math.random() * data.length);
+      dispatch(setIndex(newIndex));
+    }
+  }, [dispatch, isLinear, data.length, uploadResponse.length]);
 
   useEffect(() => {
-    if (index !== null) {
+    if (uploadResponse.length > 0) {
       const selectedParagraphs = [
         data[index - 1]?.paragraph || '',
         data[index]?.paragraph || '',
         data[index + 1]?.paragraph || '',
       ];
-      setParagraphs(selectedParagraphs);
-      setTime(estimateReadingTime(selectedParagraphs[1], wpm));
-      setWordCount(countWords(selectedParagraphs[1]));
-      setProgress(0); // Fortschritt zurücksetzen, wenn sich der mittlere Absatz ändert
+      console.log('inside hook', selectedParagraphs);
+      dispatch(setParagraphs(selectedParagraphs));
+      dispatch(setTime(estimateReadingTime(selectedParagraphs[1], wpm)));
+      dispatch(setWordCount(countWords(selectedParagraphs[1])));
+      dispatch(setProgress(0));
     }
-  }, [index, wpm, data]);
+  }, [index, wpm, data, dispatch, uploadResponse]);
 
   useEffect(() => {
+    // Logik für das Intervall
     if (intervalIsRunning) {
-      let currentIndex = index;
-      const id = setInterval(() => {
-        if (isLinear) {
-          currentIndex = (currentIndex + 1) % data.length;
-        } else {
-          currentIndex = Math.floor(Math.random() * data.length);
-        }
-        setIndex((prevIndex) => {
-          // Aktualisieren Sie den Verlauf, wenn der Index geändert wird
-          setHistory((prevHistory) => [...prevHistory, currentIndex]);
-          return currentIndex;
-        });
-      }, time * 1000);
+      const startTime = Date.now(); // Record the start time
 
-      return () => clearInterval(id);
-    }
-  }, [intervalIsRunning, time, data, isLinear, index]);
-
-  useEffect(() => {
-    if (intervalIsRunning) {
-      const startTime = Date.now();
       const interval = setInterval(() => {
-        const elapsedTime = (Date.now() - startTime) / 1000; // Verstrichene Zeit in Sekunden
-        const newProgress = (elapsedTime / (time - 1)) * 100; // Fortschritt basierend auf der verstrichenen Zeit
-        setProgress(newProgress > 100 ? 100 : newProgress);
-      }, 1000 / 60);
+        const currentTime = Date.now(); // Get the current time
+        const elapsedSeconds = (currentTime - startTime) / 1000; // Calculate elapsed time in seconds
+        const newProgress = (elapsedSeconds / time) * 100; // Calculate interval progress
 
-      return () => clearInterval(interval);
+        // Set interval progress using Redux action
+        dispatch(setProgress(newProgress > 100 ? 100 : newProgress));
+
+        // Set interval progress using local state (if needed)
+        setIntervalProgress(newProgress > 100 ? 100 : newProgress);
+        // Clear interval when progress reaches 100
+        if (newProgress >= 100) {
+          clearInterval(interval);
+          if (isLinear) {
+            dispatch(setIndex((index + 1) % data.length));
+          } else {
+            dispatch(setIndex(Math.floor(Math.random() * data.length)));
+          }
+        }
+      }, 500);
+
+      return () => {
+        clearInterval(interval);
+
+        // Reset interval progress using Redux action
+        dispatch(setProgress(0));
+        // Reset interval progress using local state (if needed)
+        setIntervalProgress(0);
+      };
     }
-  }, [intervalIsRunning, time]);
+  }, [data.length, dispatch, index, intervalIsRunning, isLinear, time]);
+
+  const toggleLinearModeHandler = () => {
+    dispatch(toggleLinearMode());
+  };
 
   const handleNewParagraph = () => {
     const randomIndex = Math.floor(Math.random() * data.length);
-    setIndex(randomIndex);
+    dispatch(setIndex(randomIndex));
   };
 
   const handleNextClick = () => {
     if (index < data.length - 1) {
-      setIndex(index + 1);
+      dispatch(setIndex(index + 1));
     }
   };
 
   const handlePrevClick = () => {
     if (index > 0) {
-      setIndex(index - 1);
+      dispatch(setIndex(index - 1));
     }
   };
 
   const handleIntervalToggle = () => {
-    setIntervalIsRunning((prev) => !prev);
+    dispatch(toggleIntervalRunning());
   };
 
+  const updateTeleprompterDataHandler = () => {
+    dispatch(updateTeleprompterData(data, wpm, index));
+  };
   return {
-    paragraphs,
-    time,
+    // Rückgabe der benötigten Zustände und Funktionen
     wpm,
-    setWpm,
-    handleNewParagraph,
-    handleIntervalToggle,
-    handleNextClick,
-    handlePrevClick,
+    setWpm: (newWpm) => dispatch(setWpm(newWpm)),
+    paragraphs,
+    index,
+    time,
     intervalIsRunning,
     isLinear,
-    setIsLinear,
     wordCount,
     progress,
-    fontSize, // Hinzugefügt
-    setFontSize, // Hinzugefügt
-    fontColor, // Hinzugefügt
-    setFontColor, // Hinzugefügt
-    history,
+    elapsedTime,
+    intervalProgress,
+    updateIndex: (newIndex) => dispatch(setIndex(newIndex)),
+    updateTeleprompterData: () =>
+      dispatch(updateTeleprompterData(data, wpm, index)),
+    toggleIntervalRunning: handleIntervalToggle,
+    toggleLinearMode: toggleLinearModeHandler,
+    setWordCount: (count) => dispatch(setWordCount(count)),
+    setProgress: (progress) => dispatch(setProgress(progress)),
+    handleNewParagraph,
+    handleNextClick,
+    handlePrevClick,
+    updateTeleprompterDataHandler,
   };
 };
 

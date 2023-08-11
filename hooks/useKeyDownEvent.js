@@ -4,11 +4,9 @@ const useKeyDownEvent = (handleNextClick, handlePrevClick) => {
   const handleKeyDown = (event) => {
     if (event.keyCode === 39) {
       // Pfeiltaste nach rechts
-      console.log('Right Arrow Key Pressed');
       handleNextClick(); // Zum nächsten Absatz wechseln
     } else if (event.keyCode === 37) {
       // Pfeiltaste nach links
-      console.log('Left Arrow Key Pressed');
       handlePrevClick(); // Zum vorherigen Absatz wechseln
     }
   };

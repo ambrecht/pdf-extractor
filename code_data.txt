@@ -1,0 +1,413 @@
+﻿------------------------------------------------------------
+Datei: E:\pdf-extractor\components\Teleprompter\ControlPanel.js
+------------------------------------------------------------
+import React, { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  setWpm,
+  setFontSize,
+  setFontColor,
+  setParagraphs,
+  setIndex,
+  toggleIntervalRunning,
+  toggleLinearMode,
+  handleNewParagraph,
+} from '../../store/teleprompterSlice';
+
+import useRandomParagraph from '../../hooks/useRandomParagraph';
+
+const ControlPanel = () => {
+  const dispatch = useDispatch();
+
+  const {
+    index,
+    wpm,
+    time,
+    intervalIsRunning,
+    isLinear,
+    wordCount,
+    fontSize,
+    fontColor,
+  } = useSelector((state) => state.teleprompter);
+
+  const response = useSelector((state) => state.upload.response);
+
+  const handleIntervalToggle = useCallback(() => {
+    dispatch(toggleIntervalRunning());
+  }, [dispatch]);
+
+  const handleNextClick = useCallback(() => {
+    dispatch(setIndex(index + 1));
+  }, [dispatch, index]);
+
+  const handlePrevClick = useCallback(() => {
+    dispatch(setIndex(index - 1));
+  }, [dispatch, index]);
+
+  const setIsLinearValue = useCallback(() => {
+    dispatch(toggleLinearMode());
+  }, [dispatch]);
+
+  const handleNewParagraphClick = useCallback(() => {
+    dispatch(handleNewParagraph()); // Dispatch the handleNewParagraph action
+  }, [dispatch]);
+
+  return (
+    <div className="relative bg-white p-4 shadow-md">
+      <div className="flex flex-wrap justify-center space-x-2">
+        <div className="bg-white p-4 shadow-md">
+          <div className="flex flex-wrap justify-center space-x-2">
+            <button
+              onClick={handleNewParagraphClick}
+              className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+            >
+              New Paragraph
+            </button>
+            <button
+              onClick={handleIntervalToggle}
+              className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+            >
+              {intervalIsRunning ? 'Stop Interval' : 'Start Interval'}
+            </button>
+            <button
+              onClick={setIsLinearValue}
+              className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+            >
+              {isLinear ? 'Deactivate Linear' : 'Activate Linear'}
+            </button>
+            <button
+              onClick={handlePrevClick}
+              className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400"
+            >
+              ZurÃ¼ck
+            </button>
+            <button
+              onClick={handleNextClick}
+              className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400"
+            >
+              Vor
+            </button>
+            <label className="text-lg p-2">Words per Minute:</label>
+            <input
+              type="number"
+              min="50"
+              max="1000"
+              value={wpm}
+              onChange={(e) => dispatch(setWpm(parseInt(e.target.value)))}
+              className="text-lg p-2 border rounded"
+            />
+            <h1 className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400">
+              {time} Sekunden bei {wordCount} WÃ¶rtern
+            </h1>
+          </div>
+          <label className="text-lg p-2">Font Size:</label>
+          <select
+            onChange={(e) => dispatch(setFontSize(e.target.value))}
+            className="text-lg p-2 border rounded"
+            value={fontSize}
+          >
+            <option value="text-5xl">Large</option>
+            <option value="text-3xl">Medium</option>
+            <option value="text-xl">Small</option>
+          </select>
+
+          <label className="text-lg p-2">Font Color:</label>
+          <input
+            type="color"
+            onChange={(e) => dispatch(setFontColor(e.target.value))}
+            className="text-lg p-2 border rounded"
+            value={fontColor}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ControlPanel;
+
+
+------------------------------------------------------------
+Datei: E:\pdf-extractor\hooks\useRandomParagraph.js
+------------------------------------------------------------
+import { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  updateTeleprompterData,
+  setIndex,
+  toggleLinearMode,
+  setWpm,
+  setParagraphs,
+  setTime,
+  toggleIntervalRunning,
+  setWordCount,
+  setProgress,
+  updateParagraphs,
+} from '../store/teleprompterSlice';
+import estimateReadingTime from '../utils/readingTime';
+import countWords from '../utils/wordCount';
+
+const useRandomParagraph = (data, initialWpm = 160) => {
+  const dispatch = useDispatch();
+  const wpm = useSelector((state) => state.teleprompter.wpm);
+  const index = useSelector((state) => state.teleprompter.index);
+  const isLinear = useSelector((state) => state.teleprompter.isLinear);
+  const paragraphs = useSelector((state) => state.teleprompter.paragraphs);
+  const time = useSelector((state) => state.teleprompter.time);
+  const intervalIsRunning = useSelector(
+    (state) => state.teleprompter.intervalIsRunning,
+  );
+  const wordCount = useSelector((state) => state.teleprompter.wordCount);
+  const progress = useSelector((state) => state.teleprompter.progress);
+  const uploadResponse = useSelector((state) => state.upload.response);
+
+  // State fÃ¼r die verstrichene Zeit und den Fortschritt des Intervalls
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [intervalProgress, setIntervalProgress] = useState(0);
+
+  useEffect(() => {
+    if (uploadResponse.length > 0) {
+      const newIndex = isLinear ? 0 : Math.floor(Math.random() * data.length);
+      dispatch(setIndex(newIndex));
+    }
+  }, [dispatch, isLinear, data.length, uploadResponse.length]);
+
+  useEffect(() => {
+    if (uploadResponse.length > 0 && index !== null) {
+      const selectedParagraphs = [
+        data[index - 1]?.paragraph || '',
+        data[index]?.paragraph || '',
+        data[index + 1]?.paragraph || '',
+      ];
+      dispatch(setParagraphs(selectedParagraphs));
+      dispatch(setTime(estimateReadingTime(selectedParagraphs[1], wpm)));
+      dispatch(setWordCount(countWords(selectedParagraphs[1])));
+      dispatch(setProgress(0));
+    }
+  }, [index, wpm, data, dispatch, uploadResponse.length]);
+
+  useEffect(() => {
+    // Logik fÃ¼r das Intervall
+    if (intervalIsRunning) {
+      const startTime = Date.now(); // Record the start time
+
+      const interval = setInterval(() => {
+        const currentTime = Date.now(); // Get the current time
+        const elapsedSeconds = (currentTime - startTime) / 1000; // Calculate elapsed time in seconds
+        const newProgress = (elapsedSeconds / time) * 100; // Calculate interval progress
+
+        // Set interval progress using Redux action
+        dispatch(setProgress(newProgress > 100 ? 100 : newProgress));
+
+        // Set interval progress using local state (if needed)
+        setIntervalProgress(newProgress > 100 ? 100 : newProgress);
+        // Clear interval when progress reaches 100
+        if (newProgress >= 100) {
+          clearInterval(interval);
+          if (isLinear) {
+            dispatch(setIndex((index + 1) % data.length));
+          } else {
+            dispatch(setIndex(Math.floor(Math.random() * data.length)));
+          }
+        }
+      }, 500);
+
+      return () => {
+        clearInterval(interval);
+
+        // Reset interval progress using Redux action
+        dispatch(setProgress(0));
+        // Reset interval progress using local state (if needed)
+        setIntervalProgress(0);
+      };
+    }
+  }, [dispatch, intervalIsRunning, time]);
+
+  const toggleLinearModeHandler = () => {
+    dispatch(toggleLinearMode());
+  };
+
+  const handleNewParagraph = () => {
+    const randomIndex = Math.floor(Math.random() * data.length);
+    dispatch(setIndex(randomIndex));
+  };
+
+  const handleNextClick = () => {
+    if (index < data.length - 1) {
+      dispatch(setIndex(index + 1));
+    }
+  };
+
+  const handlePrevClick = () => {
+    if (index > 0) {
+      dispatch(setIndex(index - 1));
+    }
+  };
+
+  const handleIntervalToggle = () => {
+    dispatch(toggleIntervalRunning());
+  };
+
+  const updateTeleprompterDataHandler = () => {
+    dispatch(updateTeleprompterData(data, wpm, index));
+  };
+  return {
+    // RÃ¼ckgabe der benÃ¶tigten ZustÃ¤nde und Funktionen
+    wpm,
+    setWpm: (newWpm) => dispatch(setWpm(newWpm)),
+    paragraphs,
+    index,
+    time,
+    intervalIsRunning,
+    isLinear,
+    wordCount,
+    progress,
+    elapsedTime,
+    intervalProgress,
+    updateIndex: (newIndex) => dispatch(setIndex(newIndex)),
+    updateTeleprompterData: () =>
+      dispatch(updateTeleprompterData(data, wpm, index)),
+    toggleIntervalRunning: handleIntervalToggle,
+    toggleLinearMode: toggleLinearModeHandler,
+    setWordCount: (count) => dispatch(setWordCount(count)),
+    setProgress: (progress) => dispatch(setProgress(progress)),
+    handleNewParagraph,
+    handleNextClick,
+    handlePrevClick,
+    updateTeleprompterDataHandler,
+  };
+};
+
+export default useRandomParagraph;
+
+
+------------------------------------------------------------
+Datei: E:\pdf-extractor\store\teleprompterSlice.js
+------------------------------------------------------------
+import { createSlice } from '@reduxjs/toolkit';
+import { mergeDeepRight as merge } from 'ramda'; // Stellen Sie sicher, dass die Ramda-Bibliothek importiert ist
+import { uploadSelectors } from './uploadSlice';
+import countWords from '../utils/wordCount';
+import estimateReadingTime from '../utils/readingTime';
+
+const teleprompterSlice = createSlice({
+  name: 'teleprompter',
+  initialState: {
+    wpm: 140,
+    paragraphs: [],
+    index: 0,
+    time: 0,
+    intervalIsRunning: false,
+    isLinear: false,
+    wordCount: 0,
+    progress: 0,
+  },
+  reducers: {
+    setWpm: (state, action) => merge(state, { wpm: action.payload }),
+    setParagraphs: (state, action) =>
+      merge(state, { paragraphs: action.payload }),
+    setIndex: (state, action) => merge(state, { index: action.payload }),
+    setTime: (state, action) => merge(state, { time: action.payload }),
+    toggleIntervalRunning: (state) =>
+      merge(state, { intervalIsRunning: !state.intervalIsRunning }),
+    toggleLinearMode: (state) => merge(state, { isLinear: !state.isLinear }),
+    setWordCount: (state, action) =>
+      merge(state, { wordCount: action.payload }),
+    setProgress: (state, action) => merge(state, { progress: action.payload }),
+    handleNewParagraph: (state, action) => {
+      const response = uploadSelectors.selectResponse(state);
+      if (response && response.length > 0) {
+        const randomIndex = Math.floor(Math.random() * response.length);
+        return merge(state, {
+          index: randomIndex,
+        });
+      }
+      return state;
+    },
+
+    updateParagraphs: (state, action) => {
+      const response = uploadSelectors.selectResponse(state);
+      if (response && response.length >= 3) {
+        const selectedParagraphs = [
+          response[action.payload - 1]?.paragraph || '',
+          response[action.payload]?.paragraph || '',
+          response[action.payload + 1]?.paragraph || '',
+        ];
+        return merge(state, {
+          paragraphs: selectedParagraphs,
+          index: action.payload,
+          time: estimateReadingTime(selectedParagraphs[1], state.wpm),
+          wordCount: countWords(selectedParagraphs[1]),
+          progress: 0,
+        });
+      }
+      return state;
+    },
+  },
+});
+
+export const {
+  handleNewParagraph,
+  setWpm,
+  setParagraphs,
+  setIndex,
+  setTime,
+  toggleIntervalRunning,
+  toggleLinearMode,
+  setWordCount,
+  setProgress,
+  updateParagraphs, // Exportieren Sie die neue Aktion
+} = teleprompterSlice.actions;
+
+export default teleprompterSlice.reducer;
+
+
+------------------------------------------------------------
+Datei: E:\pdf-extractor\components\Teleprompter\index.js
+------------------------------------------------------------
+import React from 'react';
+import { connect } from 'react-redux';
+import { setCurrentView } from '../../store/navigationSlice';
+import { setResponse } from '../../store/uploadSlice';
+import Navigation from './Navigation';
+import UploadForm from './uploadForm';
+import ControlPanel from './ControlPanel';
+import ParagraphDisplay from './ParagraphDisplay';
+import {
+  setWpm,
+  setFontSize,
+  setFontColor,
+  setCurrentView as setTeleprompterView,
+} from '../../store/teleprompterSlice';
+import {
+  setTheme,
+  setTextAlignment,
+  setBackgroundColor,
+} from '../../store/themeSlice';
+
+const Teleprompter = ({ currentView, setCurrentView, response }) => {
+  return (
+    <div className="bg-black min-h-screen flex flex-col sm:justify-center sm:items-center">
+      <Navigation />
+      {currentView === 'Upload' && <UploadForm />}
+      <ControlPanel />
+      {response && <div>Response erhalten</div>}
+      {response && <ParagraphDisplay />}
+    </div>
+  );
+};
+
+const mapStateToProps = (state) => ({
+  currentView: state.navigation.currentView,
+  response: state.upload.response,
+});
+
+const mapDispatchToProps = {
+  setCurrentView,
+  setResponse,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Teleprompter);
+
+
+
