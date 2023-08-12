@@ -1,9 +1,7 @@
 # Dateipfade der zu kopierenden Dateien
 $files = @(
     "E:\pdf-extractor\components\Teleprompter\ControlPanel.js",
-    "E:\pdf-extractor\hooks\useRandomParagraph.js",
-    "E:\pdf-extractor\store\teleprompterSlice.js",
-    "E:\pdf-extractor\components\Teleprompter\index.js"
+    "E:\pdf-extractor\hooks\useRandomParagraph.js"
 )
 
 # Zielpfad für die Ausgabedatei

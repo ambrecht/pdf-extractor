@@ -6,9 +6,9 @@ import { cleanText } from '../../utils/cleanText';
 const ParagraphDisplay = () => {
   const paragraphs = useSelector((state) => state.teleprompter.paragraphs);
   const progress = useSelector((state) => state.teleprompter.progress);
-  const time = useSelector((state) => state.teleprompter.time);
-
-  const adjustedProgress = progress * (time / (time - 1));
+  const mainParagraph = cleanText(paragraphs)[1] || '';
+  const totalChars = mainParagraph.length;
+  const charsToColor = Math.floor(totalChars * (progress / 100));
   const targetCharRef = useRef(null);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ const ParagraphDisplay = () => {
         inline: 'center',
       });
     }
-  }, [adjustedProgress]);
+  }, [charsToColor]);
 
   return (
     <div className="overflow-y-screen h-screen w-screen flex-grow">
@@ -31,8 +31,7 @@ const ParagraphDisplay = () => {
           style={{ color: idx === 1 ? 'red' : 'gray' }}
         >
           {paragraph.split('').map((char, charIdx) => {
-            const charProgress = (charIdx / paragraph.split('').length) * 100;
-            const isTargetChar = idx === 1 && charProgress < adjustedProgress;
+            const isTargetChar = idx === 1 && charIdx < charsToColor;
 
             return (
               <span

@@ -4,11 +4,9 @@ import { selectResponse } from '../../store/uploadSlice';
 import {
   toggleControlPanel,
   toggleUploadForm,
-  selectControlPanelVisible,
-  selectUploadFormVisible,
 } from '../../store/navigationSlice';
 
-const Navigation = () => {
+const Navigation = ({ closeNav }) => {
   const dispatch = useDispatch();
   const response = useSelector(selectResponse);
 
@@ -21,7 +19,7 @@ const Navigation = () => {
   };
 
   return (
-    <div className="bg-gray-800 p-4 flex justify-between items-center">
+    <div className="fixed top-0 left-0 w-full bg-white p-4 shadow-md">
       <button
         onClick={handleUploadFormToggle}
         className={`bg-blue-500 text-white p-2 rounded hover:bg-blue-400`}
@@ -36,6 +34,12 @@ const Navigation = () => {
           Control Panel
         </button>
       )}
+      <button
+        onClick={closeNav}
+        className="absolute top-2 right-2 bg-red-500 p-1 rounded"
+      >
+        X
+      </button>
     </div>
   );
 };

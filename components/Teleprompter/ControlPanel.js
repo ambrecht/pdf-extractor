@@ -15,14 +15,16 @@ const ControlPanel = ({
   updateIndex,
   updateTeleprompterData,
   toggleIntervalRunning,
-  toggleLinearMode,
+  toggleMode,
   setWordCount,
   setProgress,
   handleNewParagraph,
   handleNextClick,
   handlePrevClick,
   updateTeleprompterDataHandler,
+  nextMode,
 }) => {
+  console.log(toggleMode);
   return (
     <div className="relative bg-white p-4 shadow-md">
       <div className="flex flex-wrap justify-center space-x-2">
@@ -41,7 +43,7 @@ const ControlPanel = ({
               {intervalIsRunning ? 'Stop Interval' : 'Start Interval'}
             </button>
             <button
-              onClick={toggleLinearMode}
+              onClick={toggleMode}
               className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
             >
               {isLinear ? 'Deactivate Linear' : 'Activate Linear'}

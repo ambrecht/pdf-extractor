@@ -3,6 +3,7 @@ import {
   createSelector,
   createAsyncThunk,
 } from '@reduxjs/toolkit';
+
 import axios from 'axios';
 
 const isClient = typeof window !== 'undefined';

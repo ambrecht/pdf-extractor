@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   updateTeleprompterData,
@@ -10,118 +10,108 @@ import {
   toggleIntervalRunning,
   setWordCount,
   setProgress,
-  updateParagraphs,
 } from '../store/teleprompterSlice';
 import estimateReadingTime from '../utils/readingTime';
 import countWords from '../utils/wordCount';
 
-const useRandomParagraph = (data, initialWpm = 160) => {
+const useTeleprompter = () => {
   const dispatch = useDispatch();
-  const wpm = useSelector((state) => state.teleprompter.wpm);
-  const index = useSelector((state) => state.teleprompter.index);
-  const isLinear = useSelector((state) => state.teleprompter.isLinear);
-  const paragraphs = useSelector((state) => state.teleprompter.paragraphs);
-  const time = useSelector((state) => state.teleprompter.time);
-  const intervalIsRunning = useSelector(
-    (state) => state.teleprompter.intervalIsRunning,
-  );
-  const wordCount = useSelector((state) => state.teleprompter.wordCount);
-  const progress = useSelector((state) => state.teleprompter.progress);
-  const uploadResponse = useSelector((state) => state.upload.response);
+  const {
+    wpm,
+    index,
+    isLinear,
+    paragraphs,
+    time,
+    intervalIsRunning,
+    wordCount,
+    progress,
+  } = useSelector((state) => state.teleprompter);
 
-  // State für die verstrichene Zeit und den Fortschritt des Intervalls
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [intervalProgress, setIntervalProgress] = useState(0);
+  const uploadedParagraphs = useSelector((state) => state.upload.response);
+
+  const updateSelectedParagraphs = useCallback(() => {
+    const selectedParagraphs = [
+      uploadedParagraphs[index - 1]?.paragraph || '',
+      uploadedParagraphs[index]?.paragraph || '',
+      uploadedParagraphs[index + 1]?.paragraph || '',
+    ];
+    dispatch(setParagraphs(selectedParagraphs));
+    dispatch(setTime(estimateReadingTime(selectedParagraphs[1], wpm)));
+    dispatch(setWordCount(countWords(selectedParagraphs[1])));
+    dispatch(setProgress(0));
+  }, [uploadedParagraphs, index, wpm, dispatch]);
 
   useEffect(() => {
-    if (uploadResponse.length > 0) {
-      const newIndex = isLinear ? 0 : Math.floor(Math.random() * data.length);
-      dispatch(setIndex(newIndex));
+    if (uploadedParagraphs.length > 0) {
+      updateSelectedParagraphs();
     }
-  }, [dispatch, isLinear, data.length, uploadResponse.length]);
+  }, [uploadedParagraphs, index, wpm, updateSelectedParagraphs]);
+
+  const updateIndexBasedOnMode = useCallback(() => {
+    const mode = isLinear ? 'linear' : 'random';
+    const newIndex =
+      mode === 'linear'
+        ? (index + 1) % uploadedParagraphs.length
+        : Math.floor(Math.random() * uploadedParagraphs.length);
+    dispatch(setIndex(newIndex));
+  }, [isLinear, index, uploadedParagraphs, dispatch]);
 
   useEffect(() => {
-    if (uploadResponse.length > 0) {
-      const selectedParagraphs = [
-        data[index - 1]?.paragraph || '',
-        data[index]?.paragraph || '',
-        data[index + 1]?.paragraph || '',
-      ];
-      console.log('inside hook', selectedParagraphs);
-      dispatch(setParagraphs(selectedParagraphs));
-      dispatch(setTime(estimateReadingTime(selectedParagraphs[1], wpm)));
-      dispatch(setWordCount(countWords(selectedParagraphs[1])));
-      dispatch(setProgress(0));
-    }
-  }, [index, wpm, data, dispatch, uploadResponse]);
+    let intervalId;
 
-  useEffect(() => {
-    // Logik für das Intervall
     if (intervalIsRunning) {
-      const startTime = Date.now(); // Record the start time
+      const startTime = Date.now();
 
-      const interval = setInterval(() => {
-        const currentTime = Date.now(); // Get the current time
-        const elapsedSeconds = (currentTime - startTime) / 1000; // Calculate elapsed time in seconds
-        const newProgress = (elapsedSeconds / time) * 100; // Calculate interval progress
-
-        // Set interval progress using Redux action
+      const updateProgress = () => {
+        const elapsedTime = (Date.now() - startTime) / 1000; // Elapsed time in seconds
+        const newProgress = (elapsedTime / time) * 100;
         dispatch(setProgress(newProgress > 100 ? 100 : newProgress));
 
-        // Set interval progress using local state (if needed)
-        setIntervalProgress(newProgress > 100 ? 100 : newProgress);
-        // Clear interval when progress reaches 100
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          if (isLinear) {
-            dispatch(setIndex((index + 1) % data.length));
-          } else {
-            dispatch(setIndex(Math.floor(Math.random() * data.length)));
-          }
+        if (newProgress < 100) {
+          intervalId = requestAnimationFrame(updateProgress);
+        } else {
+          updateIndexBasedOnMode();
         }
-      }, 500);
-
-      return () => {
-        clearInterval(interval);
-
-        // Reset interval progress using Redux action
-        dispatch(setProgress(0));
-        // Reset interval progress using local state (if needed)
-        setIntervalProgress(0);
       };
+
+      intervalId = requestAnimationFrame(updateProgress);
     }
-  }, [data.length, dispatch, index, intervalIsRunning, isLinear, time]);
 
-  const toggleLinearModeHandler = () => {
-    dispatch(toggleLinearMode());
-  };
+    return () => {
+      if (intervalId) {
+        cancelAnimationFrame(intervalId);
+      }
+    };
+  }, [
+    intervalIsRunning,
+    time,
+    wpm,
+    wordCount,
+    updateIndexBasedOnMode,
+    dispatch,
+  ]);
 
-  const handleNewParagraph = () => {
-    const randomIndex = Math.floor(Math.random() * data.length);
-    dispatch(setIndex(randomIndex));
-  };
+  const handleNewParagraph = useCallback(() => {
+    dispatch(setIndex(Math.floor(Math.random() * uploadedParagraphs.length)));
+  }, [uploadedParagraphs, dispatch]);
 
-  const handleNextClick = () => {
-    if (index < data.length - 1) {
+  const handleNextClick = useCallback(() => {
+    if (index < uploadedParagraphs.length - 1) {
       dispatch(setIndex(index + 1));
     }
-  };
+  }, [index, uploadedParagraphs, dispatch]);
 
-  const handlePrevClick = () => {
+  const handlePrevClick = useCallback(() => {
     if (index > 0) {
       dispatch(setIndex(index - 1));
     }
-  };
+  }, [index, dispatch]);
 
-  const handleIntervalToggle = () => {
-    dispatch(toggleIntervalRunning());
-  };
+  const toggleMode = useCallback(() => {
+    dispatch(toggleLinearMode());
+  }, [dispatch]);
 
-  const updateTeleprompterDataHandler = () => {
-    dispatch(updateTeleprompterData(data, wpm, index));
-  };
   return {
-    // Rückgabe der benötigten Zustände und Funktionen
     wpm,
     setWpm: (newWpm) => dispatch(setWpm(newWpm)),
     paragraphs,
@@ -131,20 +121,13 @@ const useRandomParagraph = (data, initialWpm = 160) => {
     isLinear,
     wordCount,
     progress,
-    elapsedTime,
-    intervalProgress,
     updateIndex: (newIndex) => dispatch(setIndex(newIndex)),
-    updateTeleprompterData: () =>
-      dispatch(updateTeleprompterData(data, wpm, index)),
-    toggleIntervalRunning: handleIntervalToggle,
-    toggleLinearMode: toggleLinearModeHandler,
-    setWordCount: (count) => dispatch(setWordCount(count)),
-    setProgress: (progress) => dispatch(setProgress(progress)),
+    toggleIntervalRunning: () => dispatch(toggleIntervalRunning()),
     handleNewParagraph,
     handleNextClick,
     handlePrevClick,
-    updateTeleprompterDataHandler,
+    toggleMode,
   };
 };
 
-export default useRandomParagraph;
+export default useTeleprompter;
