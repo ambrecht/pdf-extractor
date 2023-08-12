@@ -5,7 +5,7 @@ import {
   selectUploadFormVisible,
 } from '../../store/navigationSlice';
 import Navigation from './Navigation';
-import UploadForm from './UploadForm';
+import UploadForm from './uploadForm';
 import ControlPanel from './ControlPanel';
 import ParagraphDisplay from './ParagraphDisplay';
 import useRandomParagraph from '../../hooks/useRandomParagraph';
@@ -35,4 +35,4 @@ const Teleprompter = () => {
     </div>
   );
 };
-export default Teleprompter;
+export default Teleprompter;

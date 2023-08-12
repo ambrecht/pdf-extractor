@@ -10,4 +10,4 @@ const useInitialization = (data) => {
   }, []);
   return [paragraph, setParagraph, index, setIndex];
 };
-export default useInitialization;
+export default useInitialization;
