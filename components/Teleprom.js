@@ -1,23 +1,17 @@
 import { useState, useEffect } from 'react';
-
 const Teleprompter = ({ text }) => {
   const [isListening, setIsListening] = useState(false);
-
   useEffect(() => {
     const recognition = new window.webkitSpeechRecognition();
-
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
-
     recognition.onstart = () => {
       setIsListening(true);
     };
-
     recognition.onend = () => {
       setIsListening(false);
     };
-
     recognition.onresult = (event) => {
       let interimText = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -28,22 +22,18 @@ const Teleprompter = ({ text }) => {
         }
       }
     };
-
     return () => {
       recognition.abort();
     };
   }, []);
-
   const startListening = () => {
     setIsListening(true);
     window.webkitSpeechRecognition.start();
   };
-
   const stopListening = () => {
     setIsListening(false);
     window.webkitSpeechRecognition.stop();
   };
-
   return (
     <div>
       <button onClick={startListening} disabled={isListening}>
@@ -56,5 +46,4 @@ const Teleprompter = ({ text }) => {
     </div>
   );
 };
-
-export default Teleprompter;
+export default Teleprompter;

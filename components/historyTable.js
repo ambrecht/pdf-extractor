@@ -1,5 +1,4 @@
 import React from 'react';
-
 const HistoryTable = ({ history, data }) => {
   return (
     <div className="overflow-x-auto">
@@ -42,5 +41,4 @@ const HistoryTable = ({ history, data }) => {
     </div>
   );
 };
-
-export default HistoryTable;
+export default HistoryTable;

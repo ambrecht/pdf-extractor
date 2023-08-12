@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import scrollIntoViewIfNeeded from 'scroll-into-view-if-needed';
 import { cleanText } from '../../utils/cleanText';
-
 const ParagraphDisplay = () => {
   const paragraphs = useSelector((state) => state.teleprompter.paragraphs);
   const progress = useSelector((state) => state.teleprompter.progress);
@@ -10,7 +9,6 @@ const ParagraphDisplay = () => {
   const totalChars = mainParagraph.length;
   const charsToColor = Math.floor(totalChars * (progress / 100));
   const targetCharRef = useRef(null);
-
   useEffect(() => {
     if (targetCharRef.current) {
       scrollIntoViewIfNeeded(targetCharRef.current, {
@@ -21,7 +19,6 @@ const ParagraphDisplay = () => {
       });
     }
   }, [charsToColor]);
-
   return (
     <div className="overflow-y-screen h-screen w-screen flex-grow">
       {cleanText(paragraphs).map((paragraph, idx) => (
@@ -32,7 +29,6 @@ const ParagraphDisplay = () => {
         >
           {paragraph.split('').map((char, charIdx) => {
             const isTargetChar = idx === 1 && charIdx < charsToColor;
-
             return (
               <span
                 ref={isTargetChar ? targetCharRef : null}
@@ -50,5 +46,4 @@ const ParagraphDisplay = () => {
     </div>
   );
 };
-
-export default ParagraphDisplay;
+export default ParagraphDisplay;

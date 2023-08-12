@@ -1,5 +1,4 @@
 import React from 'react';
-
 const ControlPanel = ({
   wpm,
   setWpm,
@@ -83,5 +82,4 @@ const ControlPanel = ({
     </div>
   );
 };
-
-export default ControlPanel;
+export default ControlPanel;

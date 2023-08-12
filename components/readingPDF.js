@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import TextToSpeech from './txt2speech';
-
 const ParagraphReader = ({ data }) => {
   const [index, setIndex] = useState(0);
   const [paragraph, setParagraph] = useState(data[index]?.paragraph || '');
-
   const handleAudioEnd = () => {
     if (index < data.length - 1) {
       setIndex(index + 1);
       setParagraph(data[index + 1].paragraph);
     }
   };
-
   const jumpParagraphs = (step) => {
     let newIndex = index + step;
     if (newIndex < 0) newIndex = 0;
@@ -19,7 +16,6 @@ const ParagraphReader = ({ data }) => {
     setIndex(newIndex);
     setParagraph(data[newIndex].paragraph);
   };
-
   return (
     <div>
       <p className="random-paragraph mb-4">{paragraph}</p>
@@ -60,5 +56,4 @@ const ParagraphReader = ({ data }) => {
     </div>
   );
 };
-
-export default ParagraphReader;
+export default ParagraphReader;

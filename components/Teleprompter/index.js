@@ -9,16 +9,13 @@ import UploadForm from './UploadForm';
 import ControlPanel from './ControlPanel';
 import ParagraphDisplay from './ParagraphDisplay';
 import useRandomParagraph from '../../hooks/useRandomParagraph';
-
 const Teleprompter = () => {
   const [isNavVisible, setIsNavVisible] = useState(true);
   const controlPanelVisible = useSelector(selectControlPanelVisible);
   const uploadFormVisible = useSelector(selectUploadFormVisible);
   const file = useSelector((state) => state.upload.file);
   const response = useSelector((state) => state.upload.response);
-
   const hookProps = useRandomParagraph(response);
-
   return (
     <div className="bg-black min-h-screen flex flex-col sm:justify-center sm:items-center">
       {isNavVisible ? (
@@ -38,5 +35,4 @@ const Teleprompter = () => {
     </div>
   );
 };
-
-export default Teleprompter;
+export default Teleprompter;

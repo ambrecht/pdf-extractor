@@ -3,7 +3,6 @@ import { mergeDeepRight as merge } from 'ramda';
 import { selectResponse } from './uploadSlice';
 import countWords from '../utils/wordCount';
 import estimateReadingTime from '../utils/readingTime';
-
 const teleprompterSlice = createSlice({
   name: 'teleprompter',
   initialState: {
@@ -38,7 +37,6 @@ const teleprompterSlice = createSlice({
       }
       return state;
     },
-
     updateParagraphs: (state, action) => {
       const response = uploadSelectors.selectResponse(state);
       if (response && response.length >= 3) {
@@ -59,7 +57,6 @@ const teleprompterSlice = createSlice({
     },
   },
 });
-
 export const {
   handleNewParagraph,
   setWpm,
@@ -72,5 +69,4 @@ export const {
   setProgress,
   updateParagraphs, // Exportieren Sie die neue Aktion
 } = teleprompterSlice.actions;
-
-export default teleprompterSlice.reducer;
+export default teleprompterSlice.reducer;

@@ -1,6 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { assoc } from 'ramda';
-
 const themeSlice = createSlice({
   name: 'theme',
   initialState: {
@@ -20,7 +19,6 @@ const themeSlice = createSlice({
       assoc('backgroundColor', action.payload, state),
   },
 });
-
 export const {
   setFontSize,
   setFontColor,
@@ -28,5 +26,4 @@ export const {
   setTextAlignment,
   setBackgroundColor,
 } = themeSlice.actions;
-
-export default themeSlice.reducer;
+export default themeSlice.reducer;

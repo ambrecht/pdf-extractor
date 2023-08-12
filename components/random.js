@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import TextToSpeech from './elevenlabs';
 import estimateReadingTime from '../utils/readingTime';
-
 const RandomParagraph = ({ data }) => {
   const [paragraph, setParagraph] = useState('');
   const [intervalId, setIntervalId] = useState(null);
@@ -13,7 +12,6 @@ const RandomParagraph = ({ data }) => {
   const [isLinear, setIsLinear] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [wpm, setWpm] = useState(160);
-
   // 1. When the component mounts, set the paragraph state to a random paragraph
   useEffect(() => {
     let randomIndex = Math.floor(Math.random() * data.length);
@@ -21,17 +19,14 @@ const RandomParagraph = ({ data }) => {
     setParagraph(rawpara);
     setIndex(randomIndex);
   }, []); // Entfernen Sie wpm aus der Abhängigkeitsliste
-
   // Neuer Hook, der nur auf Änderungen der wpm-Variable reagiert
   useEffect(() => {
     setTime(estimateReadingTime(paragraph, wpm));
   }, [wpm]);
-
   // 2. When the intervalIsRunning state changes, start or stop the interval
   useEffect(() => {
     if (intervalIsRunning) {
       setTime(estimateReadingTime(paragraph, wpm));
-
       let currentIndex = index;
       const id = setInterval(() => {
         if (isLinear) {
@@ -42,18 +37,14 @@ const RandomParagraph = ({ data }) => {
         setParagraph(data[currentIndex].paragraph);
         setIndex(currentIndex);
         setHistory([...history, currentIndex]);
-
       }, time * 1000);
       setIntervalId(id);
       return () => clearInterval(id);
     }
   }, [intervalIsRunning, time, data, history, isLinear, index, wpm]);
-
   const handleIntervalChange = (event) => {
-
     setTime(event.target.value);
   };
-
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     // Diese Funktion wird aufgerufen, wenn die Komponente unmountet. Sie entfernt den Event Listener, um Memory Leaks zu verhindern
@@ -61,7 +52,6 @@ const RandomParagraph = ({ data }) => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
-
   const handleKeyDown = (event) => {
     if (event.keyCode === 39) {
       // Pfeiltaste nach rechts
@@ -71,28 +61,23 @@ const RandomParagraph = ({ data }) => {
       handlePrevClick(); // Zum vorherigen Absatz wechseln
     }
   };
-
   // 3. A function that generates a new random paragraph and sets the paragraph state
   const handleNewParagraph = () => {
     setParagraph(getRandomParagraph());
   };
-
   // 4. A function that returns a random paragraph from the data array
   const getRandomParagraph = () => {
     const randomIndex = Math.floor(Math.random() * data.length);
     setIndex(randomIndex);
     setHistory([...history, randomIndex]);
-
     return `1 ${data[randomIndex].paragraph}, 2 ${
       data[randomIndex + 1].paragraph
     }, 3 ${data[randomIndex + 2].paragraph}`;
   };
-
   // 5. A function that starts the interval
   const handleIntervalToggle = () => {
     setIntervalIsRunning((prev) => !prev);
   };
-
   // 6. A function that sets the index state to the next paragraph in the array
   const handleNextClick = () => {
     if (index < data.length - 1) {
@@ -101,7 +86,6 @@ const RandomParagraph = ({ data }) => {
       setHistory([...history, index + 1]);
     }
   };
-
   // 7. A function that sets the index state to the previous paragraph in the array
   const handlePrevClick = () => {
     if (index > 0) {
@@ -129,7 +113,6 @@ const RandomParagraph = ({ data }) => {
           </p>
         ))}
       </div>
-
       <div className="bg-white p-4 shadow-md">
         <div className="flex flex-wrap justify-center space-x-2">
           <button
@@ -197,4 +180,4 @@ const RandomParagraph = ({ data }) => {
     </div>
   );
 };
-export default RandomParagraph;
+export default RandomParagraph;

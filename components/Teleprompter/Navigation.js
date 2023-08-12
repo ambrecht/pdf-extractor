@@ -5,19 +5,15 @@ import {
   toggleControlPanel,
   toggleUploadForm,
 } from '../../store/navigationSlice';
-
 const Navigation = ({ closeNav }) => {
   const dispatch = useDispatch();
   const response = useSelector(selectResponse);
-
   const handleUploadFormToggle = () => {
     dispatch(toggleUploadForm());
   };
-
   const handleControlPanelToggle = () => {
     dispatch(toggleControlPanel());
   };
-
   return (
     <div className="fixed top-0 left-0 w-full bg-white p-4 shadow-md">
       <button
@@ -43,5 +39,4 @@ const Navigation = ({ closeNav }) => {
     </div>
   );
 };
-
-export default Navigation;
+export default Navigation;

@@ -1,15 +1,12 @@
 import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setFile, uploadFile } from '../../store/uploadSlice';
-
 import { path } from 'ramda';
-
 const UploadPDF = () => {
   const dispatch = useDispatch();
   const file = useSelector((state) => path(['upload', 'file'], state));
   const loading = useSelector((state) => path(['upload', 'loading'], state));
   const error = useSelector((state) => path(['upload', 'error'], state));
-
   const handleFileChange = useCallback(
     (e) => {
       if (e.target.files[0]) {
@@ -18,7 +15,6 @@ const UploadPDF = () => {
     },
     [dispatch],
   );
-
   const handleSubmit = useCallback(
     (e) => {
       e.preventDefault();
@@ -26,7 +22,6 @@ const UploadPDF = () => {
     },
     [file, dispatch],
   );
-
   return (
     <div>
       <form onSubmit={handleSubmit}>
@@ -39,5 +34,4 @@ const UploadPDF = () => {
     </div>
   );
 };
-
-export default UploadPDF;
+export default UploadPDF;

@@ -3,21 +3,17 @@ import {
   createSelector,
   createAsyncThunk,
 } from '@reduxjs/toolkit';
-
 import axios from 'axios';
-
 const isClient = typeof window !== 'undefined';
 const initialResponse = isClient
   ? JSON.parse(localStorage.getItem('uploadedData')) || []
   : [];
-
 export const uploadFile = createAsyncThunk(
   'upload/file',
   async (file, { rejectWithValue }) => {
     try {
       const formData = new FormData();
       formData.append('file', file);
-
       const res = await axios.post('/api/test', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -29,7 +25,6 @@ export const uploadFile = createAsyncThunk(
     }
   },
 );
-
 const uploadSlice = createSlice({
   name: 'upload',
   initialState: {
@@ -52,7 +47,6 @@ const uploadSlice = createSlice({
       .addCase(uploadFile.fulfilled, (state, action) => {
         state.loading = false;
         state.response = action.payload;
-
         // Speichern Sie die Antwort im localStorage
         if (isClient) {
           localStorage.setItem('uploadedData', JSON.stringify(action.payload));
@@ -64,9 +58,7 @@ const uploadSlice = createSlice({
       });
   },
 });
-
 export const selectFile = (state) => state.upload.file;
 export const selectResponse = (state) => state.upload.response;
-
 export const { setFile } = uploadSlice.actions;
-export default uploadSlice.reducer;
+export default uploadSlice.reducer;

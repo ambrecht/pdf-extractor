@@ -1,5 +1,4 @@
 import React from 'react';
-
 const TextInput = ({ value, onChange, min, max, className, type = 'text' }) => {
   return (
     <input
@@ -12,5 +11,4 @@ const TextInput = ({ value, onChange, min, max, className, type = 'text' }) => {
     />
   );
 };
-
-export default TextInput;
+export default TextInput;

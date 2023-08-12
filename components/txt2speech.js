@@ -1,13 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-
 const TextToSpeech = ({ text, voice_id, onEnd }) => {
   const [audioURL, setAudioURL] = useState(null);
   const audioRef = useRef(null);
-
   useEffect(() => {
     const singleLineText = text.replace(/\s*\n\s*/g, ' ').trim();
-
     axios
       .post('/api/text2speech', { text: singleLineText, voice_id })
       .then((response) => {
@@ -23,7 +20,6 @@ const TextToSpeech = ({ text, voice_id, onEnd }) => {
         console.error('Ein interner Fehler ist aufgetreten', error);
       });
   }, [text, voice_id]);
-
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.addEventListener('ended', onEnd);
@@ -35,7 +31,6 @@ const TextToSpeech = ({ text, voice_id, onEnd }) => {
       };
     }
   }, [audioURL, onEnd]);
-
   return (
     <div>
       {audioURL && (
@@ -46,5 +41,4 @@ const TextToSpeech = ({ text, voice_id, onEnd }) => {
     </div>
   );
 };
-
-export default TextToSpeech;
+export default TextToSpeech;

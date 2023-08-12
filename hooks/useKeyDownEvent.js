@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-
 const useKeyDownEvent = (handleNextClick, handlePrevClick) => {
   const handleKeyDown = (event) => {
     if (event.keyCode === 39) {
@@ -10,7 +9,6 @@ const useKeyDownEvent = (handleNextClick, handlePrevClick) => {
       handlePrevClick(); // Zum vorherigen Absatz wechseln
     }
   };
-
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     // Diese Funktion wird aufgerufen, wenn die Komponente unmountet. Sie entfernt den Event Listener, um Memory Leaks zu verhindern
@@ -19,5 +17,4 @@ const useKeyDownEvent = (handleNextClick, handlePrevClick) => {
     };
   }, [handleNextClick, handlePrevClick]); // Abhängigkeitsarray, um sicherzustellen, dass der Event Listener nur hinzugefügt/entfernt wird, wenn sich die Funktionen ändern
 };
-
-export default useKeyDownEvent;
+export default useKeyDownEvent;

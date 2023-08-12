@@ -2,7 +2,6 @@
 import { useCallback } from 'react';
 import { setItemInLocalStorage } from '../utils/setLocalStorage.js';
 import { uploadFileToServer } from '../utils/apiCall.js';
-
 const useFileUpload = () => {
   const handleFileChange = useCallback(async (e) => {
     if (e.target.files[0]) {
@@ -17,8 +16,6 @@ const useFileUpload = () => {
       }
     }
   }, []);
-
   return handleFileChange;
 };
-
-export default useFileUpload;
+export default useFileUpload;

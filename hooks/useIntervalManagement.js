@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import estimateReadingTime from '../utils/readingTime'; // Stellen Sie sicher, dass der Pfad korrekt ist
-
 const useIntervalManagement = (
   paragraph,
   wpm,
@@ -12,15 +11,12 @@ const useIntervalManagement = (
   const [intervalId, setIntervalId] = useState(null);
   const [intervalIsRunning, setIntervalIsRunning] = useState(false);
   const [time, setTime] = useState(5);
-
   useEffect(() => {
     setTime(estimateReadingTime(paragraph, wpm));
   }, [wpm]);
-
   useEffect(() => {
     if (intervalIsRunning) {
       setTime(estimateReadingTime(paragraph, wpm));
-
       let currentIndex = index;
       const id = setInterval(() => {
         if (isLinear) {
@@ -33,13 +29,10 @@ const useIntervalManagement = (
         // setIndex(currentIndex);
         // setHistory([...history, currentIndex]);
       }, time * 1000);
-
       setIntervalId(id);
       return () => clearInterval(id);
     }
   }, [intervalIsRunning, time, data, history, isLinear, index, wpm]);
-
   return [intervalIsRunning, setIntervalIsRunning, time, setTime];
 };
-
-export default useIntervalManagement;
+export default useIntervalManagement;

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import wordcloud from 'wink-wordcloud';
-
 const WordCloud = ({ file }) => {
   const [data, setData] = useState(null);
-
   useEffect(() => {
     const extractWordsFromPdf = async () => {
       // Convert PDF to text using Wink-JS
@@ -15,10 +13,8 @@ const WordCloud = ({ file }) => {
     };
     extractWordsFromPdf();
   }, [file]);
-
   return (
     <div>{data ? <wordcloud.Renderer words={data} /> : <p>Loading...</p>}</div>
   );
 };
-
-export default WordCloud;
+export default WordCloud;

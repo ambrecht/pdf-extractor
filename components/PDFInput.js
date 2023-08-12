@@ -3,7 +3,6 @@ import axios from 'axios';
 import RandomParagraph from './RandomParagraph/index';
 import KeyDown from './keydowntest.js';
 import Navigation from './RandomParagraph/Navigation';
-
 const UploadPDF = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -11,28 +10,22 @@ const UploadPDF = () => {
   const [response, setResponse] = useState(null);
   const [showUpload, setShowUpload] = useState(true);
   const [showControlPanel, setShowControlPanel] = useState(false);
-
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
-
   const handleDragOver = (e) => {
     e.preventDefault();
   };
-
   const handleDrop = (e) => {
     e.preventDefault();
     setFile(e.dataTransfer.files[0]);
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
     const formData = new FormData();
     formData.append('file', file);
-
     try {
       const res = await axios.post('/api/test', formData, {
         headers: {
@@ -47,7 +40,6 @@ const UploadPDF = () => {
       setLoading(false);
     }
   };
-
   return (
     <div
       className="bg-black min-h-screen flex flex-col sm:justify-center sm:items-center"
@@ -87,7 +79,6 @@ const UploadPDF = () => {
         {loading && <p className="text-white">Uploading...</p>}
         {error && <p className="text-red-500">Error: {error}</p>}
         {response && <RandomParagraph data={response} />}
-
         <Navigation
           setShowUpload={setShowUpload}
           setShowControlPanel={setShowControlPanel}
@@ -96,5 +87,4 @@ const UploadPDF = () => {
     </div>
   );
 };
-
-export default UploadPDF;
+export default UploadPDF;
