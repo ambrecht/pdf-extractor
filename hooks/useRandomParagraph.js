@@ -113,4 +113,4 @@ const useTeleprompter = () => {
     toggleMode,
   };
 };
-export default useTeleprompter;
+export default useTeleprompter;

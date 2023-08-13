@@ -4,28 +4,31 @@ const themeSlice = createSlice({
   name: 'theme',
   initialState: {
     fontSize: '16px',
-    fontColor: '#000000',
-    theme: 'light',
+    fontColor: '#FFFFFF',
     textAlignment: 'left',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#000000', // Setzen Sie einen Standardwert oder lassen Sie ihn leer
     animation: 'off',
-    progressDisplay: 'color',
+    np: 'none',
+    progressBarColor: '#FFFFFF',
   },
   reducers: {
     setFontSize: (state, action) => {
-      state.fontSize = `${action.payload}px`;
+      state.fontSize = action.payload;
     },
     setFontColor: (state, action) => {
       state.fontColor = action.payload;
-    },
-    setTheme: (state, action) => {
-      state.theme = action.payload;
-    },
-    setTextAlignment: (state, action) => {
-      state.textAlignment = action.payload;
+      state.progressBarColor = action.payload;
     },
     setBackgroundColor: (state, action) => {
       state.backgroundColor = action.payload;
+    },
+    invertTheme: (state) => {
+      const tempColor = state.fontColor;
+      state.fontColor = state.backgroundColor;
+      state.backgroundColor = tempColor;
+    },
+    setTextAlignment: (state, action) => {
+      state.textAlignment = action.payload;
     },
     setAnimation: (state, action) => {
       state.animation = action.payload;
@@ -39,9 +42,9 @@ const themeSlice = createSlice({
 export const {
   setFontSize,
   setFontColor,
-  setTheme,
+  setBackgroundColor, // Stellen Sie sicher, dass Sie diese Aktion exportieren
+  invertTheme,
   setTextAlignment,
-  setBackgroundColor,
   setAnimation,
   setProgressDisplay,
 } = themeSlice.actions;
