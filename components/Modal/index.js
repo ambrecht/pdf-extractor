@@ -36,14 +36,14 @@ const Modal = ({ children, onClose }) => {
             Ziehen Sie hier, um das Modal zu bewegen
           </div>
           {children}
-          <button
-            onClick={onClose}
-            className="mt-4 inline-block bg-red-500 text-white px-4 py-2 rounded"
-          >
-            Schließen
-          </button>
         </div>
       </Draggable>
+      <button
+        onClick={onClose}
+        className="absolute bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded"
+      >
+        Schließen
+      </button>
     </div>,
     el,
   );

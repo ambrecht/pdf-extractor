@@ -1,16 +1,10 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { useThemeOptions } from '../../hooks/useThemeOptions';
 import Modal from '../Modal';
 
 const Options = ({ onClose }) => {
   const {
-    fontSize,
-    fontColor,
-    textAlignment,
-    backgroundColor,
-    animation,
-    progressDisplay,
-    progressBarColor,
     updateFontSize,
     updateFontColor,
     updateThemeInversion,
@@ -19,9 +13,20 @@ const Options = ({ onClose }) => {
     updateProgressDisplay,
   } = useThemeOptions();
 
+  // Werte aus dem Redux-Store lesen
+  const {
+    fontSize,
+    fontColor,
+    textAlignment,
+    backgroundColor,
+    animation,
+    progressDisplay,
+    progressBarColor,
+  } = useSelector((state) => state.theme);
+
   return (
     <Modal onClose={onClose}>
-      <div className="p-4 bg-white rounded shadow-lg">
+      <div className="p-4 bg-white rounded shadow-lg max-h-screen max-w-screen overflow-y-auto">
         <h2 className="text-xl font-bold mb-4">Teleprompter Einstellungen</h2>
 
         <div className="mb-4">

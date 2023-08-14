@@ -1,5 +1,5 @@
-import { useEffect, useCallback } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useEffect, useCallback, useMemo } from 'react';
+import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 import {
   updateTeleprompterData,
   setIndex,
@@ -13,8 +13,16 @@ import {
 } from '../store/teleprompterSlice';
 import estimateReadingTime from '../utils/readingTime';
 import countWords from '../utils/wordCount';
+
+const PUNCTUATION_SET = new Set(['.', ',', '!', '?', ';', ':']);
+
+const isPunctuation = (char) => PUNCTUATION_SET.has(char);
+let paused = false;
+let totalPauseTime = 0;
+
 const useTeleprompter = () => {
   const dispatch = useDispatch();
+
   const {
     wpm,
     index,
@@ -24,8 +32,13 @@ const useTeleprompter = () => {
     intervalIsRunning,
     wordCount,
     progress,
-  } = useSelector((state) => state.teleprompter);
-  const uploadedParagraphs = useSelector((state) => state.upload.response);
+  } = useSelector((state) => state.teleprompter, shallowEqual);
+
+  const uploadedParagraphs = useSelector(
+    (state) => state.upload.response,
+    shallowEqual,
+  );
+
   const updateSelectedParagraphs = useCallback(() => {
     const selectedParagraphs = [
       uploadedParagraphs[index - 1]?.paragraph || '',
@@ -37,11 +50,13 @@ const useTeleprompter = () => {
     dispatch(setWordCount(countWords(selectedParagraphs[1])));
     dispatch(setProgress(0));
   }, [uploadedParagraphs, index, wpm, dispatch]);
+
   useEffect(() => {
     if (uploadedParagraphs.length > 0) {
       updateSelectedParagraphs();
     }
   }, [uploadedParagraphs, index, wpm, updateSelectedParagraphs]);
+
   const updateIndexBasedOnMode = useCallback(() => {
     const mode = isLinear ? 'linear' : 'random';
     const newIndex =
@@ -50,13 +65,34 @@ const useTeleprompter = () => {
         : Math.floor(Math.random() * uploadedParagraphs.length);
     dispatch(setIndex(newIndex));
   }, [isLinear, index, uploadedParagraphs, dispatch]);
+
   useEffect(() => {
     let intervalId;
     if (intervalIsRunning) {
-      const startTime = Date.now();
+      let startTime = Date.now();
+      let delayTime = 0; // Neue Variable für die Verzögerung
+
+      const punctuationIndices = paragraphs[1]
+        .split('')
+        .map((char, idx) => (isPunctuation(char) ? idx : -1))
+        .filter((idx) => idx !== -1);
+
       const updateProgress = () => {
-        const elapsedTime = (Date.now() - startTime) / 1000; // Elapsed time in seconds
+        const elapsedTime = (Date.now() - startTime - totalPauseTime) / 1000;
         const newProgress = (elapsedTime / time) * 100;
+
+        const currentCharIndex = Math.floor((wordCount * newProgress) / 100);
+        if (punctuationIndices.includes(currentCharIndex) && !paused) {
+          paused = true;
+          const delay = (60 / wpm) * 2 * 1000; // 2 Sekunden Verzögerung für jedes Satzzeichen
+          setTimeout(() => {
+            paused = false;
+            totalPauseTime += delay; // Fügen Sie die Pausenzeit zur gesamten Pausenzeit hinzu
+            intervalId = requestAnimationFrame(updateProgress);
+          }, delay);
+          return;
+        }
+
         dispatch(setProgress(newProgress > 100 ? 100 : newProgress));
         if (newProgress < 100) {
           intervalId = requestAnimationFrame(updateProgress);
@@ -78,23 +114,29 @@ const useTeleprompter = () => {
     wordCount,
     updateIndexBasedOnMode,
     dispatch,
+    paragraphs,
   ]);
+
   const handleNewParagraph = useCallback(() => {
     dispatch(setIndex(Math.floor(Math.random() * uploadedParagraphs.length)));
   }, [uploadedParagraphs, dispatch]);
+
   const handleNextClick = useCallback(() => {
     if (index < uploadedParagraphs.length - 1) {
       dispatch(setIndex(index + 1));
     }
   }, [index, uploadedParagraphs, dispatch]);
+
   const handlePrevClick = useCallback(() => {
     if (index > 0) {
       dispatch(setIndex(index - 1));
     }
   }, [index, dispatch]);
+
   const toggleMode = useCallback(() => {
     dispatch(toggleLinearMode());
   }, [dispatch]);
+
   return {
     wpm,
     setWpm: (newWpm) => dispatch(setWpm(newWpm)),
@@ -113,4 +155,5 @@ const useTeleprompter = () => {
     toggleMode,
   };
 };
+
 export default useTeleprompter;
