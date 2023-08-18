@@ -4,8 +4,10 @@ import { useSelector } from 'react-redux';
 // Importieren Sie die Hooks
 import useScrollIntoView from '../../../hooks/useScrollIntoView';
 import useParagraphUpdate from '../../../hooks/useParagraphUpdate';
+import useProgressUpdate from '../../../hooks/useProgressUpdate';
 
 import { cleanText } from '../../../utils/cleanText';
+import { updateIndexBasedOnMode as getNewIndex } from '../../../utils/updateIndexBasedOnMode';
 import {
   StyledDiv,
   StyledParagraph,
@@ -29,10 +31,8 @@ const ParagraphDisplay = () => {
 
   // Verwenden Sie die Hooks
   useScrollIntoView(mainParagraphRef, intervalIsRunning);
+  useProgressUpdate(getNewIndex);
   useParagraphUpdate();
-
-  // Sie können die useProgressUpdate-Hook auch verwenden, wenn Sie die updateIndexBasedOnMode-Funktion haben.
-  // useProgressUpdate(updateIndexBasedOnMode);
 
   const progressBarColor =
     theme.progressDisplay === 'bar' ? theme.fontColor : 'white';

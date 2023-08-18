@@ -30,10 +30,6 @@ const ControlPanel = ({
 }) => {
   const dispatch = useDispatch();
 
-  const handleOptionsPanelToggle = () => {
-    dispatch(toggleOptionsPanel());
-  };
-
   const handleClosePanel = () => {
     dispatch(toggleControlPanel());
   };

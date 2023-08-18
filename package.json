@@ -16,6 +16,7 @@
     "@huggingface/inference": "^2.5.2",
     "@next/font": "13.1.1",
     "@reduxjs/toolkit": "^1.9.5",
+    "@supabase/supabase-js": "^2.32.0",
     "axios": "^1.2.2",
     "bezier-easing": "^2.1.0",
     "de-compromise": "^0.0.7",

@@ -10,26 +10,13 @@ import {
 const ControlPanel = ({
   wpm,
   setWpm,
-  paragraphs,
   index,
-  time,
-  intervalIsRunning,
   isLinear,
-  wordCount,
-  progress,
-  elapsedTime,
-  intervalProgress,
-  updateIndex,
-  updateTeleprompterData,
   toggleIntervalRunning,
-  toggleMode,
-  setWordCount,
-  setProgress,
   handleNewParagraph,
   handleNextClick,
   handlePrevClick,
-  updateTeleprompterDataHandler,
-  nextMode,
+  toggleMode,
 }) => {
   const dispatch = useDispatch();
 

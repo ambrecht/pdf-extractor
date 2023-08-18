@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 import { setProgress, setIndex } from '../store/teleprompterSlice';
 
 const PUNCTUATION_SET = new Set(['.', ',', '!', '?', ';', ':']);
@@ -9,13 +9,25 @@ let totalPauseTime = 0;
 
 const useProgressUpdate = (updateIndexBasedOnMode) => {
   const dispatch = useDispatch();
-  const { intervalIsRunning, time, wpm, wordCount, paragraphs } = useSelector(
-    (state) => state.teleprompter,
+  const {
+    intervalIsRunning,
+    time,
+    wpm,
+    wordCount,
+    paragraphs,
+    index,
+    isLinear,
+  } = useSelector((state) => state.teleprompter);
+
+  const uploadedParagraphsLength = useSelector(
+    (state) => state.upload.response.length,
+    shallowEqual,
   );
 
   useEffect(() => {
     let intervalId;
     if (intervalIsRunning) {
+      console.log('running');
       let startTime = Date.now();
       let delayTime = 0;
 
@@ -42,7 +54,7 @@ const useProgressUpdate = (updateIndexBasedOnMode) => {
 
         dispatch(setProgress(newProgress > 100 ? 100 : newProgress));
         if (newProgress >= 100) {
-          updateIndexBasedOnMode();
+          updateIndexBasedOnMode(index, isLinear, uploadedParagraphsLength);
         }
       };
       intervalId = requestAnimationFrame(updateProgress);
@@ -60,6 +72,9 @@ const useProgressUpdate = (updateIndexBasedOnMode) => {
     updateIndexBasedOnMode,
     dispatch,
     paragraphs,
+    index,
+    isLinear,
+    uploadedParagraphsLength,
   ]);
 };
 

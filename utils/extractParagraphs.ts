@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 
-const extractParas = (text: string) => {
+const extractParas = async (text: string) => {
   // Ersetzen Sie mehrere Leerzeichen durch ein einzelnes Leerzeichen, behalten Sie aber Zeilenumbrüche bei
   text = text.replace(/ +/g, ' ').replace(/-\s+/g, '');
 

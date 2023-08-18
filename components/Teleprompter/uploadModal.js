@@ -1,12 +1,19 @@
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setFile, uploadFile } from '../../store/uploadSlice';
+import {
+  setFile,
+  uploadFile,
+  setTitle,
+  setAuthor,
+} from '../../store/uploadSlice';
 import { path } from 'ramda';
 import Modal from '../Modal';
 
 const UploadModal = ({ onClose }) => {
   const dispatch = useDispatch();
   const file = useSelector((state) => path(['upload', 'file'], state));
+  const title = useSelector((state) => path(['upload', 'title'], state));
+  const author = useSelector((state) => path(['upload', 'author'], state));
   const loading = useSelector((state) => path(['upload', 'loading'], state));
   const error = useSelector((state) => path(['upload', 'error'], state));
 
@@ -30,6 +37,20 @@ const UploadModal = ({ onClose }) => {
   return (
     <Modal onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => dispatch(setTitle(e.target.value))}
+          placeholder="Buchtitel"
+          className="p-2 border rounded"
+        />
+        <input
+          type="text"
+          value={author}
+          onChange={(e) => dispatch(setAuthor(e.target.value))}
+          placeholder="Autor"
+          className="p-2 border rounded"
+        />
         <input
           type="file"
           onChange={handleFileChange}

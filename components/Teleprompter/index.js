@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   selectControlPanelVisible,
@@ -7,7 +7,6 @@ import {
 } from '../../store/navigationSlice';
 import ControlPanel from './ControlModal';
 import ParagraphDisplay from './ParagraphDisplay';
-import useRandomParagraph from '../../hooks/useRandomParagraph';
 import UploadModal from './uploadModal';
 import OptionsPanel from './OptionsPanel';
 import {
@@ -16,14 +15,16 @@ import {
   toggleOptionsPanel,
 } from '../../store/navigationSlice';
 
+import useTeleprompterControls from '../../hooks/useTeleprompterControls';
+
 const Teleprompter = () => {
   const dispatch = useDispatch();
   const controlPanelVisible = useSelector(selectControlPanelVisible);
   const uploadFormVisible = useSelector(selectUploadFormVisible);
   const optionsPanelVisible = useSelector(selectOptionsPanelVisible);
   const file = useSelector((state) => state.upload.file);
-  const response = useSelector((state) => state.upload.response);
-  const hookProps = useRandomParagraph(response);
+
+  const teleprompterControls = useTeleprompterControls();
 
   const handleUploadFormToggle = () => {
     dispatch(toggleUploadForm());
@@ -55,7 +56,8 @@ const Teleprompter = () => {
       >
         Options
       </button>
-      {controlPanelVisible && <ControlPanel {...hookProps} />}
+      {controlPanelVisible && <ControlPanel {...teleprompterControls} />}
+
       {uploadFormVisible && (
         <UploadModal onClose={() => handleUploadFormToggle(false)} />
       )}
