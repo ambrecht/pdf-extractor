@@ -1,13 +1,698 @@
-create table
-  public.paragraphs (
-    paragraph_id serial,
-    book_id integer null,
-    paragraph_string text not null,
-    wordcount integer not null,
-    constraint paragraphs_pkey primary key (paragraph_id),
-    constraint paragraphs_book_id_fkey foreign key (book_id) references book (book_id) on delete cascade
-  ) tablespace pg_default;
+E:\pdf-extractor\components\Teleprompter\ControlModal.js:
 
-create index if not exists idx_paragraphs_book_id on public.paragraphs using btree (book_id) tablespace pg_default;
-CREATE INDEX idx_paragraphs_fts ON public.paragraphs USING pgroonga(paragraph_string);
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import Modal from '../Modal';
+
+import { toggleControlPanel } from '../../store/navigationSlice';
+
+const ControlPanel = ({
+  wpm,
+  setWpm,
+  paragraphs,
+  index,
+  time,
+  intervalIsRunning,
+  isLinear,
+  wordCount,
+  progress,
+  elapsedTime,
+  intervalProgress,
+  updateIndex,
+  updateTeleprompterData,
+  toggleIntervalRunning,
+  toggleMode,
+  setWordCount,
+  setProgress,
+  handleNewParagraph,
+  handleNextClick,
+  handlePrevClick,
+  updateTeleprompterDataHandler,
+  nextMode,
+}) => {
+  const dispatch = useDispatch();
+
+  const handleClosePanel = () => {
+    dispatch(toggleControlPanel());
+  };
+
+  return (
+    <Modal>
+      <div className="bg-white p-4 shadow-md w-full max-w-screen-lg mx-auto">
+        <button
+          onClick={handleClosePanel}
+          className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white flex items-center justify-center rounded-full hover:bg-red-400"
+        >
+          X
+        </button>
+        <div className="flex flex-wrap justify-center space-x-2">
+          <button
+            onClick={handleNewParagraph}
+            className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+          >
+            New Paragraph
+          </button>
+          <button
+            onClick={toggleIntervalRunning}
+            className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+          >
+            {intervalIsRunning ? 'Stop Interval' : 'Start Interval'}
+          </button>
+          <button
+            onClick={toggleMode}
+            className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+          >
+            {isLinear ? 'Deactivate Linear' : 'Activate Linear'}
+          </button>
+          <button
+            onClick={handlePrevClick}
+            className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400"
+          >
+            Zurück
+          </button>
+          <button
+            onClick={handleNextClick}
+            className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400"
+          >
+            Vor
+          </button>
+          <label className="text-lg p-2 bg-slate-600">Words per Minute:</label>
+          <input
+            type="number"
+            min="50"
+            max="1000"
+            value={wpm}
+            onChange={(e) => setWpm(parseInt(e.target.value))}
+            className="text-lg p-2 border rounded"
+          />
+          <h1 className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400">
+            {time} Sekunden bei {wordCount} Wörtern
+          </h1>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+export default ControlPanel;
+
+
+E:\pdf-extractor\components\Teleprompter\ControlPanel.js:
+
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import Modal from '../Modal';
+
+import {
+  toggleOptionsPanel,
+  toggleControlPanel,
+} from '../../store/navigationSlice';
+
+const ControlPanel = ({
+  wpm,
+  setWpm,
+  index,
+  isLinear,
+  toggleIntervalRunning,
+  handleNewParagraph,
+  handleNextClick,
+  handlePrevClick,
+  toggleMode,
+}) => {
+  const dispatch = useDispatch();
+
+  const handleOptionsPanelToggle = () => {
+    dispatch(toggleOptionsPanel());
+  };
+
+  const handleClosePanel = () => {
+    dispatch(toggleControlPanel());
+  };
+
+  return (
+    <div className="absolute top-0 left-0 bg-white p-4 shadow-md">
+      <button
+        onClick={handleClosePanel}
+        className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white flex items-center justify-center rounded-full hover:bg-red-400"
+      >
+        X
+      </button>
+      <div className="flex flex-wrap justify-center space-x-2">
+        <button
+          onClick={handleNewParagraph}
+          className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+        >
+          New Paragraph
+        </button>
+        <button
+          onClick={toggleIntervalRunning}
+          className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+        >
+          {intervalIsRunning ? 'Stop Interval' : 'Start Interval'}
+        </button>
+        <button
+          onClick={toggleMode}
+          className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
+        >
+          {isLinear ? 'Deactivate Linear' : 'Activate Linear'}
+        </button>
+        <button
+          onClick={handlePrevClick}
+          className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400"
+        >
+          Zurück
+        </button>
+        <button
+          onClick={handleNextClick}
+          className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400"
+        >
+          Vor
+        </button>
+        <label className="text-lg p-2">Words per Minute:</label>
+        <input
+          type="number"
+          min="50"
+          max="1000"
+          value={wpm}
+          onChange={(e) => setWpm(parseInt(e.target.value))}
+          className="text-lg p-2 border rounded"
+        />
+        <h1 className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400">
+          {time} Sekunden bei {wordCount} Wörtern
+        </h1>
+        <select className="text-lg p-2 border rounded">
+          <option value="text-5xl">Large</option>
+          <option value="text-3xl">Medium</option>
+          <option value="text-xl">Small</option>
+        </select>
+        <button
+          onClick={handleOptionsPanelToggle}
+          className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-orange-500 text-white flex items-center justify-center rounded-full hover:bg-orange-400 ml-20"
+        >
+          Options
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ControlPanel;
+
+
+E:\pdf-extractor\components\Teleprompter\DocumentModal.js:
+
+import React, { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { path } from 'ramda';
+import Modal from '../Modal';
+import { setBookId } from '../../store/teleprompterSlice'; // Importieren Sie die entsprechende Aktion zum Setzen der book_id
+
+const BookSelectionModal = ({ onClose }) => {
+  const dispatch = useDispatch();
+  const books = useSelector((state) => path(['documents', 'data'], state));
+  const selectedBookId = useSelector((state) =>
+    path(['teleprompter', 'book_id'], state),
+  );
+
+  const handleBookChange = useCallback(
+    (e) => {
+      dispatch(setBookId(Number(e.target.value)));
+    },
+    [dispatch],
+  );
+
+  return (
+    <Modal onClose={onClose}>
+      <form className="flex flex-col space-y-4">
+        <select
+          value={selectedBookId}
+          onChange={handleBookChange}
+          className="p-2 border rounded"
+        >
+          <option value="" disabled>
+            Wählen Sie ein Buch aus
+          </option>
+          {books.map((book) => (
+            <option key={book.book_id} value={book.book_id}>
+              {book.book_title} von {book.author}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={onClose}
+          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-400"
+        >
+          Schließen
+        </button>
+      </form>
+    </Modal>
+  );
+};
+
+export default BookSelectionModal;
+
+
+E:\pdf-extractor\components\Teleprompter\index.js:
+
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  selectControlPanelVisible,
+  selectUploadFormVisible,
+  selectOptionsPanelVisible,
+  selectDocumentsPanelVisible,
+} from '../../store/navigationSlice';
+import ControlPanel from './ControlModal';
+import ParagraphDisplay from './ParagraphDisplay';
+import UploadModal from './uploadModal';
+import OptionsPanel from './OptionsPanel';
+import {
+  toggleControlPanel,
+  toggleUploadForm,
+  toggleOptionsPanel,
+  toggleDocumentsPanel,
+} from '../../store/navigationSlice';
+import DocumentModal from './DocumentModal';
+
+import useTeleprompterControls from '../../hooks/useTeleprompterControls';
+
+const Teleprompter = () => {
+  const dispatch = useDispatch();
+  const controlPanelVisible = useSelector(selectControlPanelVisible);
+  const uploadFormVisible = useSelector(selectUploadFormVisible);
+  const optionsPanelVisible = useSelector(selectOptionsPanelVisible);
+  const documentsPanelVisible = useSelector(selectDocumentsPanelVisible);
+  const file = useSelector((state) => state.upload.file);
+
+  const teleprompterControls = useTeleprompterControls();
+
+  const handleUploadFormToggle = () => {
+    dispatch(toggleUploadForm());
+  };
+  const handleControlPanelToggle = () => {
+    dispatch(toggleControlPanel());
+  };
+  const handleOptionsPanelToggle = () => {
+    dispatch(toggleOptionsPanel());
+  };
+  const handleDocumentsPanelToggle = () => {
+    dispatch(toggleDocumentsPanel());
+  };
+
+  return (
+    <div className="bg-black min-h-screen flex flex-col sm:justify-center sm:items-center relative">
+      <button
+        onClick={handleUploadFormToggle}
+        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-blue-500 text-white flex items-center justify-center rounded-full hover:bg-blue-400 ml-30"
+      >
+        +
+      </button>
+      <button
+        onClick={handleControlPanelToggle}
+        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-green-500 text-white flex items-center justify-center rounded-full hover:bg-green-400 ml-10"
+      >
+        C
+      </button>
+      <button
+        onClick={handleOptionsPanelToggle}
+        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-orange-500 text-white flex items-center justify-center rounded-full hover:bg-orange-400 ml-20"
+      >
+        Options
+      </button>
+      <button
+        onClick={handleDocumentsPanelToggle}
+        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-red-500 text-white flex items-center justify-center rounded-full hover:bg-red-400 ml-40"
+      >
+        Docs
+      </button>
+      {controlPanelVisible && <ControlPanel {...teleprompterControls} />}
+
+      {uploadFormVisible && (
+        <UploadModal onClose={() => handleUploadFormToggle(false)} />
+      )}
+      {file && <ParagraphDisplay />}
+      {optionsPanelVisible && (
+        <OptionsPanel
+          onClose={() => handleOptionsPanelToggle(false)}
+        ></OptionsPanel>
+      )}
+      {documentsPanelVisible && (
+        <DocumentModal
+          onClose={() => handleDocumentsPanelToggle(false)}
+        ></DocumentModal>
+      )}
+    </div>
+  );
+};
+
+export default Teleprompter;
+
+
+E:\pdf-extractor\components\Teleprompter\OptionsPanel.js:
+
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { useThemeOptions } from '../../hooks/useThemeOptions';
+import Modal from '../Modal';
+
+const Options = ({ onClose }) => {
+  const {
+    updateFontSize,
+    updateFontColor,
+    updateThemeInversion,
+    updateTextAlignment,
+    updateAnimation,
+    updateProgressDisplay,
+  } = useThemeOptions();
+
+  // Werte aus dem Redux-Store lesen
+  const {
+    fontSize,
+    fontColor,
+    textAlignment,
+    backgroundColor,
+    animation,
+    progressDisplay,
+    progressBarColor,
+  } = useSelector((state) => state.theme);
+
+  return (
+    <Modal onClose={onClose}>
+      <div className="p-4 bg-white rounded shadow-lg max-h-screen max-w-screen overflow-y-auto">
+        <h2 className="text-xl font-bold mb-4">Teleprompter Einstellungen</h2>
+
+        <div className="mb-4">
+          <label className="block mb-2">Font Size (in rem)</label>
+          <input
+            type="number"
+            min="1"
+            max="300"
+            value={parseInt(fontSize, 10)}
+            onChange={(e) => updateFontSize(`${e.target.value}rem`)}
+            className="p-2 border rounded w-full"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block mb-2">Font Color</label>
+          <select
+            value={fontColor}
+            onChange={(e) => updateFontColor(e.target.value)}
+            className="p-2 border rounded w-full"
+          >
+            <option value="#FFFFFF">Weiß</option>
+            <option value="#000000">Schwarz</option>
+            <option value="#FF0000">Rot</option>
+            <option value="#00FF00">Grün</option>
+            <option value="#0000FF">Blau</option>
+            <option value="#FFA500">Orange</option>
+            <option value="#4B0082">Indigo</option>
+            <option value="#9400D3">Violett</option>
+            <option value="#FFC0CB">Rosa</option>
+            <option value="#8A2BE2">Blauviolett</option>
+            <option value="#7FFF00">Chartreuse</option>
+            <option value="#D2691E">Schokolade</option>
+          </select>
+        </div>
+
+        <div className="mb-4">
+          <label className="block mb-2">Theme</label>
+          <select
+            value={textAlignment} // Hier habe ich angenommen, dass Sie das Textausrichtungsthema verwenden möchten. Wenn nicht, ändern Sie dies entsprechend.
+            onChange={(e) => updateThemeInversion()}
+            className="p-2 border rounded w-full"
+          >
+            <option value="invert">Invert Theme</option>
+            <option value="deinvert">Deinvert Theme</option>
+          </select>
+        </div>
+
+        <div className="mb-4">
+          <label className="block mb-2">Text Alignment</label>
+          <select
+            value={textAlignment}
+            onChange={(e) => updateTextAlignment(e.target.value)}
+            className="p-2 border rounded w-full"
+          >
+            <option value="left">Left</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+          </select>
+        </div>
+
+        <div className="mb-4">
+          <label className="block mb-2">Animation</label>
+          <select
+            value={animation}
+            onChange={(e) => updateAnimation(e.target.value)}
+            className="p-2 border rounded w-full"
+          >
+            <option value="on">On</option>
+            <option value="off">Off</option>
+          </select>
+        </div>
+
+        <div className="mb-4">
+          <label className="block mb-2">Progress Display</label>
+          <select
+            value={progressDisplay}
+            onChange={(e) => updateProgressDisplay(e.target.value)}
+            className="p-2 border rounded w-full"
+          >
+            <option value="color">Color</option>
+            <option value="bar">Bar</option>
+            <option value="none">None</option>
+          </select>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+export default Options;
+
+
+E:\pdf-extractor\components\Teleprompter\uploadModal.js:
+
+import React, { useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  setFile,
+  uploadFile,
+  setTitle,
+  setAuthor,
+} from '../../store/uploadSlice';
+import { path } from 'ramda';
+import Modal from '../Modal';
+
+const UploadModal = ({ onClose }) => {
+  const dispatch = useDispatch();
+  const file = useSelector((state) => path(['upload', 'file'], state));
+  const title = useSelector((state) => path(['upload', 'title'], state));
+  const author = useSelector((state) => path(['upload', 'author'], state));
+  const loading = useSelector((state) => path(['upload', 'loading'], state));
+  const error = useSelector((state) => path(['upload', 'error'], state));
+
+  const handleFileChange = useCallback(
+    (e) => {
+      if (e.target.files[0]) {
+        dispatch(setFile(e.target.files[0]));
+      }
+    },
+    [dispatch],
+  );
+
+  const handleSubmit = useCallback(
+    (e) => {
+      e.preventDefault();
+      dispatch(uploadFile(file));
+    },
+    [file, dispatch],
+  );
+
+  return (
+    <Modal onClose={onClose}>
+      <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => dispatch(setTitle(e.target.value))}
+          placeholder="Buchtitel"
+          className="p-2 border rounded"
+        />
+        <input
+          type="text"
+          value={author}
+          onChange={(e) => dispatch(setAuthor(e.target.value))}
+          placeholder="Autor"
+          className="p-2 border rounded"
+        />
+        <input
+          type="file"
+          onChange={handleFileChange}
+          className="p-2 border rounded"
+        />
+        <button
+          type="submit"
+          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-400"
+        >
+          Upload
+        </button>
+      </form>
+      {loading && <p className="mt-4">Uploading...</p>}
+      {error && <p className="mt-4 text-red-500">Error: {error}</p>}
+      {file && <p className="mt-4">Response: Das Ding ging durch!</p>}
+    </Modal>
+  );
+};
+
+export default UploadModal;
+
+
+E:\pdf-extractor\components\Teleprompter\ParagraphDisplay\debug.log:
+
+[0819/074947.721:ERROR:registration_protocol_win.cc(107)] CreateFile: Das System kann die angegebene Datei nicht finden. (0x2)
+[0819/075741.403:ERROR:registration_protocol_win.cc(107)] CreateFile: Das System kann die angegebene Datei nicht finden. (0x2)
+
+
+E:\pdf-extractor\components\Teleprompter\ParagraphDisplay\index.js:
+
+import React, { useEffect, useRef, useMemo } from 'react';
+import { useSelector } from 'react-redux';
+
+// Importieren Sie die Hooks
+import useScrollIntoView from '../../../hooks/useScrollIntoView';
+import useParagraphUpdate from '../../../hooks/useParagraphUpdate';
+import useProgressUpdate from '../../../hooks/useProgressUpdate';
+
+import { cleanText } from '../../../utils/cleanText';
+import { updateIndexBasedOnMode as getNewIndex } from '../../../utils/updateIndexBasedOnMode';
+import {
+  StyledDiv,
+  StyledParagraph,
+  StyledSpan,
+  ProgressBar,
+} from './styles.js';
+
+const ParagraphDisplay = () => {
+  const paragraphs = useSelector((state) => state.teleprompter.paragraphs);
+  const progress = useSelector((state) => state.teleprompter.progress);
+  const theme = useSelector((state) => state.theme);
+  const mainParagraph = cleanText(paragraphs)[1] || '';
+  const totalChars = mainParagraph.length;
+  const charsToColor = Math.floor(totalChars * (progress / 100));
+  const targetCharRef = useRef(null);
+  const mainParagraphRef = useRef(null); // Ref for the main paragraph
+
+  const cleanedParagraphs = useMemo(() => cleanText(paragraphs), [paragraphs]);
+
+  const { intervalIsRunning } = useSelector((state) => state.teleprompter);
+
+  // Verwenden Sie die Hooks
+  useScrollIntoView(mainParagraphRef, intervalIsRunning);
+  useProgressUpdate(getNewIndex);
+  useParagraphUpdate();
+
+  const progressBarColor =
+    theme.progressDisplay === 'bar' ? theme.fontColor : 'white';
+
+  return (
+    <StyledDiv bgColor={theme.backgroundColor}>
+      {cleanedParagraphs.map((paragraph, idx) => (
+        <StyledParagraph
+          ref={idx === 1 ? mainParagraphRef : null} // Setzen Sie die Referenz für den Hauptabsatz
+          key={idx}
+          align={theme.textAlignment}
+          color={idx === 1 ? theme.fontColor : '#808080'}
+          size={theme.fontSize}
+        >
+          {paragraph.split('').map((char, charIdx) => {
+            const isTargetChar = idx === 1 && charIdx <= charsToColor;
+            const charColor =
+              theme.progressDisplay === 'color' && idx === 1
+                ? isTargetChar
+                  ? theme.fontColor
+                  : '#808080'
+                : idx === 1
+                ? theme.fontColor
+                : '#808080';
+            return (
+              <StyledSpan
+                ref={isTargetChar ? targetCharRef : null}
+                key={charIdx}
+                color={charColor}
+                animate={theme.animation === 'on'}
+                isTarget={charIdx === charsToColor}
+                isAdjacent={
+                  charIdx === charsToColor - 1 || charIdx === charsToColor + 1
+                }
+              >
+                {char}
+              </StyledSpan>
+            );
+          })}
+        </StyledParagraph>
+      ))}
+      {theme.progressDisplay === 'bar' && (
+        <ProgressBar bgColor={progressBarColor} progress={progress} />
+      )}
+    </StyledDiv>
+  );
+};
+
+export default React.memo(ParagraphDisplay);
+
+
+E:\pdf-extractor\components\Teleprompter\ParagraphDisplay\styles.js:
+
+import styled, { keyframes } from 'styled-components';
+
+const waveColor = keyframes`
+  0% {
+    color: #808080;
+    transform: scale(1);
+  }
+  50% {
+    color: ${(props) => props.theme.fontColor};
+    transform: scale(1.1);
+  }
+  100% {
+    color: #808080;
+    transform: scale(1);
+  }`;
+
+const StyledDiv = styled.div`
+  overflow-y: auto;
+  max-height: 100vh;
+  max-width: 100vw;
+  flex-grow: 1;
+  background-color: ${(props) => props.bgColor};
+  padding: 1rem;
+`;
+
+const StyledParagraph = styled.p`
+  font-weight: 600;
+  text-align: ${(props) => props.align};
+  margin: 0.5rem 1rem;
+  line-height: 1.75;
+  color: ${(props) => props.color};
+  font-size: ${(props) => props.size};
+  word-wrap: break-word;
+`;
+
+const StyledSpan = styled.span`
+  color: ${(props) => props.color};
+  animation: ${(props) => (props.animate ? 'fadeIn 1s' : 'none')};
+  transition: color 0.3s ease; // Hinzufügen dieser Zeile
+`;
+
+const ProgressBar = styled.div`
+  height: 0.25rem;
+  background-color: ${(props) => props.bgColor || 'white'};
+  width: ${(props) => `${props.progress}%`};
+`;
+
+export { StyledDiv, StyledParagraph, StyledSpan, ProgressBar };
+
 

@@ -1,11 +1,5 @@
-
 # Pfad zum Verzeichnis, das Sie durchlaufen möchten
-
 $directoryPath = "E:\pdf-extractor\store"
-
-
-#$directoryPath = "E:\pdf-extractor\components\Teleprompter"
-
 
 # Pfad zur Ausgabedatei
 $outputFile = "E:\pdf-extractor\store.txt"
@@ -23,8 +17,8 @@ function Write-ContentToFile {
 
     # Durchläuft alle Dateien im aktuellen Verzeichnis
     Get-ChildItem -Path $path -File | ForEach-Object {
-        # Schreibt den Dateinamen in die Ausgabedatei
-        Add-Content -Path $outputFile -Value "$($_.Name):`r`n"
+        # Schreibt den Dateinamen und den Pfad in die Ausgabedatei
+        Add-Content -Path $outputFile -Value "$($_.FullName):`r`n"
 
         # Schreibt den Inhalt der Datei in die Ausgabedatei
         Get-Content -Path $_.FullName | Add-Content -Path $outputFile

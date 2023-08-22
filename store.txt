@@ -1,4 +1,50 @@
-navigationSlice.js:
+E:\pdf-extractor\store\debug.log:
+
+[0819/075525.845:ERROR:registration_protocol_win.cc(107)] CreateFile: Das System kann die angegebene Datei nicht finden. (0x2)
+[0819/075741.435:ERROR:registration_protocol_win.cc(107)] CreateFile: Das System kann die angegebene Datei nicht finden. (0x2)
+
+
+E:\pdf-extractor\store\documentsSlice.js:
+
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { supabase } from '../supabase/index';
+
+export const fetchBooks = createAsyncThunk('books/fetch', async () => {
+  const { data, error } = await supabase.from('book').select('*');
+  console.log(data);
+  if (error) throw error;
+  return data;
+});
+
+const booksSlice = createSlice({
+  name: 'books',
+  initialState: {
+    data: [],
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchBooks.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchBooks.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+      })
+      .addCase(fetchBooks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+  },
+});
+
+export default booksSlice.reducer;
+
+
+E:\pdf-extractor\store\navigationSlice.js:
 
 import { createSlice } from '@reduxjs/toolkit';
 
@@ -6,7 +52,9 @@ const navigationSlice = createSlice({
   name: 'navigation',
   initialState: {
     controlPanelVisible: false,
-    uploadFormVisible: true,
+    uploadFormVisible: false,
+    optionsPanelVisible: false,
+    documentsPanelVisible: false, // Neue Option für das Optionspanel
   },
   reducers: {
     toggleControlPanel: (state) => {
@@ -15,65 +63,88 @@ const navigationSlice = createSlice({
     toggleUploadForm: (state) => {
       state.uploadFormVisible = !state.uploadFormVisible;
     },
+    toggleOptionsPanel: (state) => {
+      // Neue Reducer-Funktion
+      state.optionsPanelVisible = !state.optionsPanelVisible;
+    },
+
+    toggleDocumentsPanel: (state) => {
+      state.documentsPanelVisible = !state.documentsPanelVisible;
+    },
   },
 });
 
 // ACTIONS
-export const { toggleControlPanel, toggleUploadForm } = navigationSlice.actions;
+export const {
+  toggleControlPanel,
+  toggleUploadForm,
+  toggleOptionsPanel,
+  toggleDocumentsPanel,
+} = navigationSlice.actions;
 
 // SELECTORS
 export const selectControlPanelVisible = (state) =>
   state.navigation.controlPanelVisible;
 export const selectUploadFormVisible = (state) =>
   state.navigation.uploadFormVisible;
-
+export const selectOptionsPanelVisible = (state) =>
+  state.navigation.optionsPanelVisible;
+// Neuer Selector
+export const selectDocumentsPanelVisible = (state) =>
+  state.navigation.documentsPanelVisible; //
 // REDUCER
 export default navigationSlice.reducer;
 
 
-store.js:
-
-// Verzeichnispfad von store.js ist E:\pdf-extractor\store\store.js:
+E:\pdf-extractor\store\store.js:
 
 import { configureStore } from '@reduxjs/toolkit';
 import teleprompterReducer from './teleprompterSlice';
 import themeReducer from './themeSlice';
 import uploadReducer from './uploadSlice';
 import navigationReducer from './navigationSlice';
+import documentsSlice, { fetchBooks } from './documentsSlice'; // Importieren Sie fetchBooks
 
 const store = configureStore({
   reducer: {
     teleprompter: teleprompterReducer,
     theme: themeReducer,
     upload: uploadReducer,
-    navigation: navigationReducer, // Neuer Slice hinzugefügt
+    navigation: navigationReducer,
+    documents: documentsSlice,
   },
 });
+
+// Rufen Sie die fetchBooks-Aktion direkt nach der Erstellung des Stores auf
+store.dispatch(fetchBooks());
 
 export default store;
 
 
-teleprompterSlice.js:
+E:\pdf-extractor\store\teleprompterSlice.js:
 
 import { createSlice } from '@reduxjs/toolkit';
 import { mergeDeepRight as merge } from 'ramda';
 import { selectResponse } from './uploadSlice';
 import countWords from '../utils/wordCount';
 import estimateReadingTime from '../utils/readingTime';
-
 const teleprompterSlice = createSlice({
   name: 'teleprompter',
   initialState: {
     wpm: 140,
     paragraphs: [],
-    index: 0,
+    index: 5,
     time: 0,
     intervalIsRunning: false,
     isLinear: false,
     wordCount: 0,
     progress: 0,
+    paragraphcount: 0,
+    bookID: 0,
   },
   reducers: {
+    setParagraphCount: (state, action) =>
+      merge(state, { paragraphcount: action.payload }),
     setWpm: (state, action) => merge(state, { wpm: action.payload }),
     setParagraphs: (state, action) =>
       merge(state, { paragraphs: action.payload }),
@@ -95,7 +166,6 @@ const teleprompterSlice = createSlice({
       }
       return state;
     },
-
     updateParagraphs: (state, action) => {
       const response = uploadSelectors.selectResponse(state);
       if (response && response.length >= 3) {
@@ -114,9 +184,12 @@ const teleprompterSlice = createSlice({
       }
       return state;
     },
+    setBookId: (state, action) => {
+      state.bookID = action.payload;
+    },
+    selectBookId: (state) => state.bookID,
   },
 });
-
 export const {
   handleNewParagraph,
   setWpm,
@@ -127,49 +200,71 @@ export const {
   toggleLinearMode,
   setWordCount,
   setProgress,
-  updateParagraphs, // Exportieren Sie die neue Aktion
+  updateParagraphs,
+  setParagraphCount,
+  setBookId, // Exportieren Sie die setBookId Aktion
+  selectBookId, // Exportieren Sie die selectBookId Aktion
 } = teleprompterSlice.actions;
-
 export default teleprompterSlice.reducer;
 
 
-themeSlice.js:
+E:\pdf-extractor\store\themeSlice.js:
 
 import { createSlice } from '@reduxjs/toolkit';
-import { assoc } from 'ramda';
 
 const themeSlice = createSlice({
   name: 'theme',
   initialState: {
-    fontSize: 16,
-    fontColor: 'black',
-    theme: 'light',
+    fontSize: '16px',
+    fontColor: '#FFFFFF',
     textAlignment: 'left',
-    backgroundColor: 'white',
+    backgroundColor: '#000000', // Setzen Sie einen Standardwert oder lassen Sie ihn leer
+    animation: 'off',
+    np: 'none',
+    progressBarColor: '#FFFFFF',
   },
   reducers: {
-    setFontSize: (state, action) => assoc('fontSize', action.payload, state),
-    setFontColor: (state, action) => assoc('fontColor', action.payload, state),
-    setTheme: (state, action) => assoc('theme', action.payload, state),
-    setTextAlignment: (state, action) =>
-      assoc('textAlignment', action.payload, state),
-    setBackgroundColor: (state, action) =>
-      assoc('backgroundColor', action.payload, state),
+    setFontSize: (state, action) => {
+      state.fontSize = action.payload;
+    },
+    setFontColor: (state, action) => {
+      state.fontColor = action.payload;
+      state.progressBarColor = action.payload;
+    },
+    setBackgroundColor: (state, action) => {
+      state.backgroundColor = action.payload;
+    },
+    invertTheme: (state) => {
+      const tempColor = state.fontColor;
+      state.fontColor = state.backgroundColor;
+      state.backgroundColor = tempColor;
+    },
+    setTextAlignment: (state, action) => {
+      state.textAlignment = action.payload;
+    },
+    setAnimation: (state, action) => {
+      state.animation = action.payload;
+    },
+    setProgressDisplay: (state, action) => {
+      state.progressDisplay = action.payload;
+    },
   },
 });
 
 export const {
   setFontSize,
   setFontColor,
-  setTheme,
+  setBackgroundColor, // Stellen Sie sicher, dass Sie diese Aktion exportieren
+  invertTheme,
   setTextAlignment,
-  setBackgroundColor,
+  setAnimation,
+  setProgressDisplay,
 } = themeSlice.actions;
 
 export default themeSlice.reducer;
 
 
-uploadSlice.js:
+E:\pdf-extractor\store\uploadSlice.js:
 
 import {
   createSlice,
@@ -185,12 +280,17 @@ const initialResponse = isClient
 
 export const uploadFile = createAsyncThunk(
   'upload/file',
-  async (file, { rejectWithValue }) => {
+  async (file, { getState, rejectWithValue }) => {
     try {
+      const state = getState(); // Abrufen des aktuellen Zustands
+      const { title, author } = state.upload; // Extrahieren von Titel und Autor aus dem Zustand
+      console.log(title, author);
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('title', title); // Hinzufügen des Titels zum FormData
+      formData.append('author', author); // Hinzufügen des Autors zum FormData
 
-      const res = await axios.post('/api/test', formData, {
+      const res = await axios.post('/api/xxx', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -205,14 +305,24 @@ export const uploadFile = createAsyncThunk(
 const uploadSlice = createSlice({
   name: 'upload',
   initialState: {
+    author: '',
+    title: '',
     file: null,
     loading: false,
     error: null,
-    response: [],
+    response: initialResponse,
   },
   reducers: {
     setFile: (state, action) => {
       state.file = action.payload;
+    },
+    setTitle: (state, action) => {
+      // Aktion zum Setzen des Buchtitels
+      state.title = action.payload;
+    },
+    setAuthor: (state, action) => {
+      // Aktion zum Setzen des Autors
+      state.author = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -224,7 +334,6 @@ const uploadSlice = createSlice({
       .addCase(uploadFile.fulfilled, (state, action) => {
         state.loading = false;
         state.response = action.payload;
-
         // Speichern Sie die Antwort im localStorage
         if (isClient) {
           localStorage.setItem('uploadedData', JSON.stringify(action.payload));
@@ -239,8 +348,7 @@ const uploadSlice = createSlice({
 
 export const selectFile = (state) => state.upload.file;
 export const selectResponse = (state) => state.upload.response;
-
-export const { setFile } = uploadSlice.actions;
+export const { setFile, setTitle, setAuthor } = uploadSlice.actions; // Exportieren Sie die neuen Aktionen
 export default uploadSlice.reducer;
 
 

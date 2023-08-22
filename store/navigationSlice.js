@@ -4,8 +4,9 @@ const navigationSlice = createSlice({
   name: 'navigation',
   initialState: {
     controlPanelVisible: false,
-    uploadFormVisible: true,
-    optionsPanelVisible: false, // Neue Option für das Optionspanel
+    uploadFormVisible: false,
+    optionsPanelVisible: false,
+    documentsPanelVisible: false, // Neue Option für das Optionspanel
   },
   reducers: {
     toggleControlPanel: (state) => {
@@ -18,12 +19,20 @@ const navigationSlice = createSlice({
       // Neue Reducer-Funktion
       state.optionsPanelVisible = !state.optionsPanelVisible;
     },
+
+    toggleDocumentsPanel: (state) => {
+      state.documentsPanelVisible = !state.documentsPanelVisible;
+    },
   },
 });
 
 // ACTIONS
-export const { toggleControlPanel, toggleUploadForm, toggleOptionsPanel } =
-  navigationSlice.actions;
+export const {
+  toggleControlPanel,
+  toggleUploadForm,
+  toggleOptionsPanel,
+  toggleDocumentsPanel,
+} = navigationSlice.actions;
 
 // SELECTORS
 export const selectControlPanelVisible = (state) =>
@@ -31,7 +40,9 @@ export const selectControlPanelVisible = (state) =>
 export const selectUploadFormVisible = (state) =>
   state.navigation.uploadFormVisible;
 export const selectOptionsPanelVisible = (state) =>
-  state.navigation.optionsPanelVisible; // Neuer Selector
-
+  state.navigation.optionsPanelVisible;
+// Neuer Selector
+export const selectDocumentsPanelVisible = (state) =>
+  state.navigation.documentsPanelVisible; //
 // REDUCER
 export default navigationSlice.reducer;

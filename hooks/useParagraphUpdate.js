@@ -1,7 +1,8 @@
-import { useEffect, useCallback } from 'react';
+import { supabase } from '../supabase/index';
+import { useEffect, useCallback, useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  setParagraphs,
+  setParagraphs as setParagraphsAction,
   setTime,
   setWordCount,
   setProgress,
@@ -11,26 +12,59 @@ import countWords from '../utils/wordCount';
 
 const useParagraphUpdate = () => {
   const dispatch = useDispatch();
-  const { wpm, index, paragraphs } = useSelector((state) => state.teleprompter);
-  const uploadedParagraphs = useSelector((state) => state.upload.response);
+  const { wpm, index } = useSelector((state) => state.teleprompter);
+  const [paragraphs, setParagraphs] = useState([]);
 
-  const updateSelectedParagraphs = useCallback(() => {
-    const selectedParagraphs = [
-      uploadedParagraphs[index - 1]?.paragraph || '',
-      uploadedParagraphs[index]?.paragraph || '',
-      uploadedParagraphs[index + 1]?.paragraph || '',
-    ];
-    dispatch(setParagraphs(selectedParagraphs));
-    dispatch(setTime(estimateReadingTime(selectedParagraphs[1], wpm)));
-    dispatch(setWordCount(countWords(selectedParagraphs[1])));
-    dispatch(setProgress(0));
-  }, [uploadedParagraphs, index, wpm, dispatch]);
+  console.log('index', index);
+
+  const memoizedEstimateReadingTime = useMemo(() => estimateReadingTime, []);
+  const memoizedCountWords = useMemo(() => countWords, []);
+  const memoizedSetTime = useCallback(
+    (time) => dispatch(setTime(time)),
+    [dispatch],
+  );
+  const memoizedSetWordCount = useCallback(
+    (wordCount) => dispatch(setWordCount(wordCount)),
+    [dispatch],
+  );
+  const memoizedSetProgress = useCallback(
+    (progress) => dispatch(setProgress(progress)),
+    [dispatch],
+  );
+
+  const updateSelectedParagraphs = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('paragraphs')
+      .select('paragraph_string')
+      .in('paragraph_id', [index - 1, index, index + 1]);
+    if (error) console.log('error', error);
+    else {
+      const selectedParagraphs = data.map((item) => item.paragraph_string);
+      console.log('para', selectedParagraphs);
+      setParagraphs(selectedParagraphs);
+      dispatch(setParagraphsAction(selectedParagraphs)); // Using setParagraphsAction here
+      const time = memoizedEstimateReadingTime(selectedParagraphs[1], wpm);
+      const wordCount = memoizedCountWords(selectedParagraphs[1]);
+      memoizedSetTime(time);
+      memoizedSetWordCount(wordCount);
+      memoizedSetProgress(0);
+    }
+  }, [
+    index,
+    wpm,
+    dispatch,
+    memoizedEstimateReadingTime,
+    memoizedCountWords,
+    memoizedSetTime,
+    memoizedSetWordCount,
+    memoizedSetProgress,
+  ]);
 
   useEffect(() => {
-    if (uploadedParagraphs.length > 0) {
-      updateSelectedParagraphs();
-    }
-  }, [uploadedParagraphs, index, wpm, updateSelectedParagraphs]);
+    updateSelectedParagraphs();
+  }, [index, updateSelectedParagraphs]); // Hier wurde der useEffect Hook angepasst, um nur bei Änderungen des index auszulösen.
+
+  return paragraphs;
 };
 
 export default useParagraphUpdate;

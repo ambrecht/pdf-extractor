@@ -3,19 +3,26 @@ import { mergeDeepRight as merge } from 'ramda';
 import { selectResponse } from './uploadSlice';
 import countWords from '../utils/wordCount';
 import estimateReadingTime from '../utils/readingTime';
+import fetchParagraphs from './thunks/fetchParagraphs';
+import fetchParagraphCount from './thunks/fetchParagraphCount';
+
 const teleprompterSlice = createSlice({
   name: 'teleprompter',
   initialState: {
     wpm: 140,
     paragraphs: [],
-    index: 0,
+    index: 1,
     time: 0,
     intervalIsRunning: false,
     isLinear: false,
     wordCount: 0,
     progress: 0,
+    paragraphcount: 0,
+    bookID: 0,
   },
   reducers: {
+    setParagraphCount: (state, action) =>
+      merge(state, { paragraphcount: action.payload }),
     setWpm: (state, action) => merge(state, { wpm: action.payload }),
     setParagraphs: (state, action) =>
       merge(state, { paragraphs: action.payload }),
@@ -55,6 +62,19 @@ const teleprompterSlice = createSlice({
       }
       return state;
     },
+    setBookId: (state, action) => {
+      state.bookID = action.payload;
+    },
+    selectBookId: (state) => state.bookID,
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchParagraphCount.fulfilled, (state, action) => {
+        state.paragraphcount = action.payload;
+      })
+      .addCase(fetchParagraphs.fulfilled, (state, action) => {
+        state.paragraphs = action.payload;
+      });
   },
 });
 export const {
@@ -67,6 +87,9 @@ export const {
   toggleLinearMode,
   setWordCount,
   setProgress,
-  updateParagraphs, // Exportieren Sie die neue Aktion
+  updateParagraphs,
+  setParagraphCount,
+  setBookId, // Exportieren Sie die setBookId Aktion
+  selectBookId, // Exportieren Sie die selectBookId Aktion
 } = teleprompterSlice.actions;
-export default teleprompterSlice.reducer;
+export default teleprompterSlice.reducer;
