@@ -1,3 +1,4 @@
+// E:\pdf-extractor\store\navigationSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
 const navigationSlice = createSlice({
@@ -6,7 +7,8 @@ const navigationSlice = createSlice({
     controlPanelVisible: false,
     uploadFormVisible: false,
     optionsPanelVisible: false,
-    documentsPanelVisible: false, // Neue Option für das Optionspanel
+    documentsPanelVisible: false,
+    paragraphsVisible: false, // Neue Option für das Optionspanel
   },
   reducers: {
     toggleControlPanel: (state) => {
@@ -23,6 +25,10 @@ const navigationSlice = createSlice({
     toggleDocumentsPanel: (state) => {
       state.documentsPanelVisible = !state.documentsPanelVisible;
     },
+
+    toggleParagraphs: (state) => {
+      state.paragraphsVisible = !state.paragraphsVisible;
+    },
   },
 });
 
@@ -32,6 +38,7 @@ export const {
   toggleUploadForm,
   toggleOptionsPanel,
   toggleDocumentsPanel,
+  toggleParagraphs,
 } = navigationSlice.actions;
 
 // SELECTORS
@@ -41,8 +48,9 @@ export const selectUploadFormVisible = (state) =>
   state.navigation.uploadFormVisible;
 export const selectOptionsPanelVisible = (state) =>
   state.navigation.optionsPanelVisible;
-// Neuer Selector
 export const selectDocumentsPanelVisible = (state) =>
-  state.navigation.documentsPanelVisible; //
+  state.navigation.documentsPanelVisible;
+export const selectparagraphsVisible = (state) =>
+  state.navigation.paragraphsVisible;
 // REDUCER
 export default navigationSlice.reducer;

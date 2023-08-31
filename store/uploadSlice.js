@@ -3,36 +3,12 @@ import {
   createSelector,
   createAsyncThunk,
 } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { uploadFile } from './thunks/uploadFile'; // Importieren Sie die Thunk-Action
 
 const isClient = typeof window !== 'undefined';
 const initialResponse = isClient
   ? JSON.parse(localStorage.getItem('uploadedData')) || []
   : [];
-
-export const uploadFile = createAsyncThunk(
-  'upload/file',
-  async (file, { getState, rejectWithValue }) => {
-    try {
-      const state = getState(); // Abrufen des aktuellen Zustands
-      const { title, author } = state.upload; // Extrahieren von Titel und Autor aus dem Zustand
-      console.log(title, author);
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('title', title); // Hinzufügen des Titels zum FormData
-      formData.append('author', author); // Hinzufügen des Autors zum FormData
-
-      const res = await axios.post('/api/xxx', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return res.data;
-    } catch (err) {
-      return rejectWithValue(err.message);
-    }
-  },
-);
 
 const uploadSlice = createSlice({
   name: 'upload',
@@ -80,5 +56,6 @@ const uploadSlice = createSlice({
 
 export const selectFile = (state) => state.upload.file;
 export const selectResponse = (state) => state.upload.response;
+export const selectLoading = (state) => state.upload.loading;
 export const { setFile, setTitle, setAuthor } = uploadSlice.actions; // Exportieren Sie die neuen Aktionen
 export default uploadSlice.reducer;

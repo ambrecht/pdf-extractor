@@ -1,26 +1,36 @@
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  setFile,
-  uploadFile,
-  setTitle,
-  setAuthor,
-} from '../../store/uploadSlice';
+import { setFile, setTitle, setAuthor } from '../../store/uploadSlice';
 import { path } from 'ramda';
 import Modal from '../Modal';
+import { uploadFile } from '../../store/thunks/uploadFile';
+import { extractTitleAndAuthor } from '../../utils/extractMetadata';
 
+/**
+ * UploadModal Component
+ * @description This component handles the file upload functionality.
+ * @param {Function} onClose - Function to close the modal
+ */
 const UploadModal = ({ onClose }) => {
   const dispatch = useDispatch();
   const file = useSelector((state) => path(['upload', 'file'], state));
   const title = useSelector((state) => path(['upload', 'title'], state));
   const author = useSelector((state) => path(['upload', 'author'], state));
-  const loading = useSelector((state) => path(['upload', 'loading'], state));
   const error = useSelector((state) => path(['upload', 'error'], state));
+  const loading = useSelector((state) => path(['upload', 'loading'], state));
 
   const handleFileChange = useCallback(
-    (e) => {
-      if (e.target.files[0]) {
-        dispatch(setFile(e.target.files[0]));
+    async (e) => {
+      const selectedFile = e.target.files[0];
+      if (selectedFile) {
+        dispatch(setFile(selectedFile));
+        try {
+          const metadata = await extractTitleAndAuthor(selectedFile);
+          dispatch(setTitle(metadata.title));
+          dispatch(setAuthor(metadata.author));
+        } catch (err) {
+          console.error('Could not extract title and author:', err);
+        }
       }
     },
     [dispatch],
@@ -63,7 +73,6 @@ const UploadModal = ({ onClose }) => {
           Upload
         </button>
       </form>
-      {loading && <p className="mt-4">Uploading...</p>}
       {error && <p className="mt-4 text-red-500">Error: {error}</p>}
       {file && <p className="mt-4">Response: Das Ding ging durch!</p>}
     </Modal>

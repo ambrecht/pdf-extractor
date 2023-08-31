@@ -1,36 +1,32 @@
 E:\pdf-extractor\components\Teleprompter\ControlModal.js:
 
+// E:\pdf-extractor\components\Teleprompter\ControlModal.js
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Modal from '../Modal';
-
+import useTeleprompterControls from '../../hooks/useTeleprompterControls';
 import { toggleControlPanel } from '../../store/navigationSlice';
 
-const ControlPanel = ({
-  wpm,
-  setWpm,
-  paragraphs,
-  index,
-  time,
-  intervalIsRunning,
-  isLinear,
-  wordCount,
-  progress,
-  elapsedTime,
-  intervalProgress,
-  updateIndex,
-  updateTeleprompterData,
-  toggleIntervalRunning,
-  toggleMode,
-  setWordCount,
-  setProgress,
-  handleNewParagraph,
-  handleNextClick,
-  handlePrevClick,
-  updateTeleprompterDataHandler,
-  nextMode,
-}) => {
+const ControlPanel = () => {
   const dispatch = useDispatch();
+
+  const {
+    wpm,
+    setWpm,
+    index,
+    isLinear,
+    toggleIntervalRunning,
+    handleNewParagraph,
+    handleNextClick,
+    handlePrevClick,
+    toggleMode,
+    intervalIsRunning,
+    paragraphs,
+    time,
+    wordCount,
+    progress,
+    bookID,
+  } = useTeleprompterControls();
 
   const handleClosePanel = () => {
     dispatch(toggleControlPanel());
@@ -86,7 +82,7 @@ const ControlPanel = ({
             className="text-lg p-2 border rounded"
           />
           <h1 className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400">
-            {time} Sekunden bei {wordCount} Wörtern
+            {time} Sekunden bei Wörtern
           </h1>
         </div>
       </div>
@@ -99,6 +95,7 @@ export default ControlPanel;
 
 E:\pdf-extractor\components\Teleprompter\ControlPanel.js:
 
+// E:\pdf-extractor\components\Teleprompter\ControlPanel.js
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import Modal from '../Modal';
@@ -107,18 +104,9 @@ import {
   toggleOptionsPanel,
   toggleControlPanel,
 } from '../../store/navigationSlice';
+import useTeleprompterControls from '../../hooks/useTeleprompterControls';
 
-const ControlPanel = ({
-  wpm,
-  setWpm,
-  index,
-  isLinear,
-  toggleIntervalRunning,
-  handleNewParagraph,
-  handleNextClick,
-  handlePrevClick,
-  toggleMode,
-}) => {
+const ControlPanel = () => {
   const dispatch = useDispatch();
 
   const handleOptionsPanelToggle = () => {
@@ -128,6 +116,19 @@ const ControlPanel = ({
   const handleClosePanel = () => {
     dispatch(toggleControlPanel());
   };
+
+  const {
+    wpm,
+    setWpm,
+    index,
+    isLinear,
+    toggleIntervalRunning,
+    handleNewParagraph,
+    handleNextClick,
+    handlePrevClick,
+    toggleMode,
+    intervalIsRunning,
+  } = useTeleprompterControls;
 
   return (
     <div className="absolute top-0 left-0 bg-white p-4 shadow-md">
@@ -201,22 +202,34 @@ export default ControlPanel;
 
 E:\pdf-extractor\components\Teleprompter\DocumentModal.js:
 
-import React, { useCallback } from 'react';
+// E:\pdf-extractor\components\Teleprompter\DocumentModal.js
+
+import React, { useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { path } from 'ramda';
 import Modal from '../Modal';
-import { setBookId } from '../../store/teleprompterSlice'; // Importieren Sie die entsprechende Aktion zum Setzen der book_id
+import {
+  setBookId,
+  updateIndex,
+  updateParagraphCount,
+} from '../../store/teleprompterSlice';
 
 const BookSelectionModal = ({ onClose }) => {
   const dispatch = useDispatch();
   const books = useSelector((state) => path(['documents', 'data'], state));
-  const selectedBookId = useSelector((state) =>
-    path(['teleprompter', 'book_id'], state),
-  );
+  const bookID = useSelector((state) => state.teleprompter.bookID);
+
+  useEffect(() => {
+    if (bookID > 0) {
+      dispatch(updateParagraphCount()); // Rufen Sie die updateParagraphCount-Funktion auf
+    }
+  }, [bookID, dispatch]);
 
   const handleBookChange = useCallback(
     (e) => {
-      dispatch(setBookId(Number(e.target.value)));
+      const selectedBookId = e.target.value;
+      dispatch(setBookId(selectedBookId));
+      dispatch(updateIndex(0));
     },
     [dispatch],
   );
@@ -225,7 +238,7 @@ const BookSelectionModal = ({ onClose }) => {
     <Modal onClose={onClose}>
       <form className="flex flex-col space-y-4">
         <select
-          value={selectedBookId}
+          value={bookID}
           onChange={handleBookChange}
           className="p-2 border rounded"
         >
@@ -255,93 +268,90 @@ export default BookSelectionModal;
 
 E:\pdf-extractor\components\Teleprompter\index.js:
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   selectControlPanelVisible,
   selectUploadFormVisible,
   selectOptionsPanelVisible,
   selectDocumentsPanelVisible,
+  selectparagraphsVisible,
 } from '../../store/navigationSlice';
 import ControlPanel from './ControlModal';
 import ParagraphDisplay from './ParagraphDisplay';
 import UploadModal from './uploadModal';
 import OptionsPanel from './OptionsPanel';
+import DocumentModal from './DocumentModal';
 import {
   toggleControlPanel,
   toggleUploadForm,
   toggleOptionsPanel,
   toggleDocumentsPanel,
+  toggleParagraphs,
 } from '../../store/navigationSlice';
-import DocumentModal from './DocumentModal';
 
-import useTeleprompterControls from '../../hooks/useTeleprompterControls';
-
+/**
+ * Teleprompter Component
+ * @description This component serves as the main interface for the teleprompter functionality.
+ * It contains various panels and modals that can be toggled on and off.
+ */
 const Teleprompter = () => {
   const dispatch = useDispatch();
   const controlPanelVisible = useSelector(selectControlPanelVisible);
   const uploadFormVisible = useSelector(selectUploadFormVisible);
   const optionsPanelVisible = useSelector(selectOptionsPanelVisible);
   const documentsPanelVisible = useSelector(selectDocumentsPanelVisible);
-  const file = useSelector((state) => state.upload.file);
+  const paragraphsVisible = useSelector(selectparagraphsVisible);
 
-  const teleprompterControls = useTeleprompterControls();
+  // Toggle functions for various panels and modals
+  const handleToggle = (toggleAction) => () => dispatch(toggleAction());
 
-  const handleUploadFormToggle = () => {
-    dispatch(toggleUploadForm());
-  };
-  const handleControlPanelToggle = () => {
-    dispatch(toggleControlPanel());
-  };
-  const handleOptionsPanelToggle = () => {
-    dispatch(toggleOptionsPanel());
-  };
-  const handleDocumentsPanelToggle = () => {
-    dispatch(toggleDocumentsPanel());
-  };
+  const modalRootRef = useRef(null);
 
   return (
-    <div className="bg-black min-h-screen flex flex-col sm:justify-center sm:items-center relative">
-      <button
-        onClick={handleUploadFormToggle}
-        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-blue-500 text-white flex items-center justify-center rounded-full hover:bg-blue-400 ml-30"
-      >
-        +
-      </button>
-      <button
-        onClick={handleControlPanelToggle}
-        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-green-500 text-white flex items-center justify-center rounded-full hover:bg-green-400 ml-10"
-      >
-        C
-      </button>
-      <button
-        onClick={handleOptionsPanelToggle}
-        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-orange-500 text-white flex items-center justify-center rounded-full hover:bg-orange-400 ml-20"
-      >
-        Options
-      </button>
-      <button
-        onClick={handleDocumentsPanelToggle}
-        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-red-500 text-white flex items-center justify-center rounded-full hover:bg-red-400 ml-40"
-      >
-        Docs
-      </button>
-      {controlPanelVisible && <ControlPanel {...teleprompterControls} />}
-
+    <div
+      id="modal-root"
+      className="bg-black min-h-screen flex flex-col sm:justify-center sm:items-center relative"
+    >
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-4">
+        {[
+          { action: handleToggle(toggleUploadForm), label: '+', color: 'blue' },
+          {
+            action: handleToggle(toggleControlPanel),
+            label: 'C',
+            color: 'green',
+          },
+          {
+            action: handleToggle(toggleOptionsPanel),
+            label: 'Options',
+            color: 'orange',
+          },
+          {
+            action: handleToggle(toggleDocumentsPanel),
+            label: 'Docs',
+            color: 'red',
+          },
+        ].map(({ action, label, color }, index) => (
+          <button
+            key={index}
+            onClick={action}
+            className={`w-16 h-16 bg-${color}-500 text-white flex items-center justify-center rounded-full hover:bg-${color}-400`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {controlPanelVisible && <ControlPanel />}
       {uploadFormVisible && (
-        <UploadModal onClose={() => handleUploadFormToggle(false)} />
+        <UploadModal onClose={handleToggle(toggleUploadForm)} />
       )}
-      {file && <ParagraphDisplay />}
       {optionsPanelVisible && (
-        <OptionsPanel
-          onClose={() => handleOptionsPanelToggle(false)}
-        ></OptionsPanel>
+        <OptionsPanel onClose={handleToggle(toggleOptionsPanel)} />
       )}
       {documentsPanelVisible && (
-        <DocumentModal
-          onClose={() => handleDocumentsPanelToggle(false)}
-        ></DocumentModal>
+        <DocumentModal onClose={handleToggle(toggleDocumentsPanel)} />
       )}
+      <ParagraphDisplay></ParagraphDisplay>
     </div>
   );
 };
@@ -351,6 +361,7 @@ export default Teleprompter;
 
 E:\pdf-extractor\components\Teleprompter\OptionsPanel.js:
 
+// E:\pdf-extractor\components\Teleprompter\OptionsPanel.js
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useThemeOptions } from '../../hooks/useThemeOptions';
@@ -475,16 +486,13 @@ export default Options;
 
 E:\pdf-extractor\components\Teleprompter\uploadModal.js:
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  setFile,
-  uploadFile,
-  setTitle,
-  setAuthor,
-} from '../../store/uploadSlice';
+import { setFile, setTitle, setAuthor } from '../../store/uploadSlice';
 import { path } from 'ramda';
 import Modal from '../Modal';
+import { uploadFile } from '../../store/thunks/uploadFile';
+import { extractTitleAndAuthor } from '../../utils/extractMetadata';
 
 const UploadModal = ({ onClose }) => {
   const dispatch = useDispatch();
@@ -495,9 +503,20 @@ const UploadModal = ({ onClose }) => {
   const error = useSelector((state) => path(['upload', 'error'], state));
 
   const handleFileChange = useCallback(
-    (e) => {
+    async (e) => {
       if (e.target.files[0]) {
         dispatch(setFile(e.target.files[0]));
+
+        try {
+          const { title, author } = await extractTitleAndAuthor(
+            e.target.files[0],
+          );
+          dispatch(setTitle(title));
+          dispatch(setAuthor(author));
+        } catch (error) {
+          console.error('Could not extract title and author:', error);
+          // Benutzer auffordern, die Informationen manuell einzugeben
+        }
       }
     },
     [dispatch],
@@ -552,22 +571,19 @@ export default UploadModal;
 
 E:\pdf-extractor\components\Teleprompter\ParagraphDisplay\debug.log:
 
-[0819/074947.721:ERROR:registration_protocol_win.cc(107)] CreateFile: Das System kann die angegebene Datei nicht finden. (0x2)
-[0819/075741.403:ERROR:registration_protocol_win.cc(107)] CreateFile: Das System kann die angegebene Datei nicht finden. (0x2)
+// E:\pdf-extractor\components\Teleprompter\ParagraphDisplay\debug.log
+// E:\pdf-extractor\components\Teleprompter\ParagraphDisplay\debug.log
+// E:\pdf-extractor\components\Teleprompter\ParagraphDisplay\debug.log
+[0819/074947.721:ERROR:registration_protocol_win.cc(107)] CreateFile: Das System kann die angegebene Datei nicht finden. (0x2) [0819/075741.403:ERROR:registration_protocol_win.cc(107)] CreateFile: Das System kann die angegebene Datei nicht finden. (0x2)
 
 
 E:\pdf-extractor\components\Teleprompter\ParagraphDisplay\index.js:
 
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-
-// Importieren Sie die Hooks
 import useScrollIntoView from '../../../hooks/useScrollIntoView';
-import useParagraphUpdate from '../../../hooks/useParagraphUpdate';
-import useProgressUpdate from '../../../hooks/useProgressUpdate';
-
+import useProgressBar from '../../../hooks/useProgressBar';
 import { cleanText } from '../../../utils/cleanText';
-import { updateIndexBasedOnMode as getNewIndex } from '../../../utils/updateIndexBasedOnMode';
 import {
   StyledDiv,
   StyledParagraph,
@@ -576,23 +592,28 @@ import {
 } from './styles.js';
 
 const ParagraphDisplay = () => {
-  const paragraphs = useSelector((state) => state.teleprompter.paragraphs);
-  const progress = useSelector((state) => state.teleprompter.progress);
+  const { paragraphs, time, wpm, wordCount, intervalIsRunning } = useSelector(
+    (state) => state.teleprompter,
+  );
   const theme = useSelector((state) => state.theme);
+
+  const progress = useProgressBar(
+    time,
+    wpm,
+    wordCount,
+    paragraphs,
+    intervalIsRunning,
+  );
+
   const mainParagraph = cleanText(paragraphs)[1] || '';
   const totalChars = mainParagraph.length;
   const charsToColor = Math.floor(totalChars * (progress / 100));
-  const targetCharRef = useRef(null);
-  const mainParagraphRef = useRef(null); // Ref for the main paragraph
+  const mainParagraphRef = useRef(null);
+  const targetCharRef = useRef(null); // Initialize targetCharRef here
 
   const cleanedParagraphs = useMemo(() => cleanText(paragraphs), [paragraphs]);
 
-  const { intervalIsRunning } = useSelector((state) => state.teleprompter);
-
-  // Verwenden Sie die Hooks
   useScrollIntoView(mainParagraphRef, intervalIsRunning);
-  useProgressUpdate(getNewIndex);
-  useParagraphUpdate();
 
   const progressBarColor =
     theme.progressDisplay === 'bar' ? theme.fontColor : 'white';
@@ -601,7 +622,7 @@ const ParagraphDisplay = () => {
     <StyledDiv bgColor={theme.backgroundColor}>
       {cleanedParagraphs.map((paragraph, idx) => (
         <StyledParagraph
-          ref={idx === 1 ? mainParagraphRef : null} // Setzen Sie die Referenz für den Hauptabsatz
+          ref={idx === 1 ? mainParagraphRef : null}
           key={idx}
           align={theme.textAlignment}
           color={idx === 1 ? theme.fontColor : '#808080'}
@@ -634,7 +655,7 @@ const ParagraphDisplay = () => {
           })}
         </StyledParagraph>
       ))}
-      {theme.progressDisplay === 'bar' && (
+      {intervalIsRunning && theme.progressDisplay === 'bar' && (
         <ProgressBar bgColor={progressBarColor} progress={progress} />
       )}
     </StyledDiv>
@@ -646,22 +667,15 @@ export default React.memo(ParagraphDisplay);
 
 E:\pdf-extractor\components\Teleprompter\ParagraphDisplay\styles.js:
 
+// E:\pdf-extractor\components\Teleprompter\ParagraphDisplay\styles.js
+// E:\pdf-extractor\components\Teleprompter\ParagraphDisplay\styles.js
+
 import styled, { keyframes } from 'styled-components';
-
-const waveColor = keyframes`
-  0% {
-    color: #808080;
-    transform: scale(1);
-  }
-  50% {
-    color: ${(props) => props.theme.fontColor};
-    transform: scale(1.1);
-  }
-  100% {
-    color: #808080;
-    transform: scale(1);
-  }`;
-
+const waveColor = keyframes`   0% {     color: #808080;     transform: scale(1);   }   50% {     color: ${(
+  props,
+) =>
+  props.theme
+    .fontColor};     transform: scale(1.1);   }   100% {     color: #808080;     transform: scale(1);   }`;
 const StyledDiv = styled.div`
   overflow-y: auto;
   max-height: 100vh;
@@ -670,7 +684,6 @@ const StyledDiv = styled.div`
   background-color: ${(props) => props.bgColor};
   padding: 1rem;
 `;
-
 const StyledParagraph = styled.p`
   font-weight: 600;
   text-align: ${(props) => props.align};
@@ -680,19 +693,16 @@ const StyledParagraph = styled.p`
   font-size: ${(props) => props.size};
   word-wrap: break-word;
 `;
-
 const StyledSpan = styled.span`
   color: ${(props) => props.color};
-  animation: ${(props) => (props.animate ? 'fadeIn 1s' : 'none')};
-  transition: color 0.3s ease; // Hinzufügen dieser Zeile
+  animation: ${(props) => (props.animate ? waveColor : 'none')};
+  transition: color 0.3s ease;
 `;
-
 const ProgressBar = styled.div`
   height: 0.25rem;
   background-color: ${(props) => props.bgColor || 'white'};
   width: ${(props) => `${props.progress}%`};
 `;
-
 export { StyledDiv, StyledParagraph, StyledSpan, ProgressBar };
 
 

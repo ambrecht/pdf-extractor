@@ -1,20 +1,31 @@
 // E:\pdf-extractor\components\Teleprompter\DocumentModal.js
 
-import React, { useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { path } from 'ramda';
 import Modal from '../Modal';
-import { setBookId } from '../../store/teleprompterSlice';
+import {
+  setBookId,
+  updateIndex,
+  updateParagraphCount,
+} from '../../store/teleprompterSlice';
 
 const BookSelectionModal = ({ onClose }) => {
   const dispatch = useDispatch();
   const books = useSelector((state) => path(['documents', 'data'], state));
-  const bookID = useSelector((state) => state.teleprompter.bookID); // Verwenden Sie bookID statt bookID
+  const bookID = useSelector((state) => state.teleprompter.bookID);
+
+  useEffect(() => {
+    if (bookID > 0) {
+      dispatch(updateParagraphCount()); // Rufen Sie die updateParagraphCount-Funktion auf
+    }
+  }, [bookID, dispatch]);
 
   const handleBookChange = useCallback(
     (e) => {
-      console.log('Selected book ID:', e.target.value);
-      dispatch(setBookId(88)); // Verwenden Sie setBookId
+      const selectedBookId = e.target.value;
+      dispatch(setBookId(selectedBookId));
+      dispatch(updateIndex(0));
     },
     [dispatch],
   );

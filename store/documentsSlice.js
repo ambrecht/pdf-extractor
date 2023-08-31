@@ -1,3 +1,4 @@
+// E:\pdf-extractor\store\documentsSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { supabase } from '../supabase/index';
 

@@ -1,21 +1,36 @@
+// E:\pdf-extractor\store\teleprompterSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 import { mergeDeepRight as merge } from 'ramda';
 import { selectResponse } from './uploadSlice';
-import countWords from '../utils/wordCount';
-import estimateReadingTime from '../utils/readingTime';
-import fetchParagraphs from './thunks/fetchParagraphs';
+import { fetchParagraphs } from './thunks/fetchParagraphs';
 import fetchParagraphCount from './thunks/fetchParagraphCount';
+
+export const updateIndex = (newIndex) => (dispatch, getState) => {
+  console.log('updateIndex action called with newIndex:', newIndex);
+
+  dispatch(setIndex(newIndex));
+  const bookId = getState().teleprompter.bookID;
+
+  console.log('Current bookId:', bookId);
+
+  dispatch(fetchParagraphs({ index: newIndex, bookId }));
+};
+
+export const updateParagraphCount = () => (dispatch, getState) => {
+  const bookId = getState().teleprompter.bookID; // Abrufen der bookID aus dem Store
+  dispatch(fetchParagraphCount(bookId)); // Aufrufen des Thunks
+};
 
 const teleprompterSlice = createSlice({
   name: 'teleprompter',
   initialState: {
     wpm: 140,
     paragraphs: [],
-    index: 1,
+    index: 0,
     time: 0,
     intervalIsRunning: false,
     isLinear: false,
-    wordCount: 0,
+    wordCount: 99,
     progress: 0,
     paragraphcount: 0,
     bookID: 0,
@@ -24,10 +39,11 @@ const teleprompterSlice = createSlice({
     setParagraphCount: (state, action) =>
       merge(state, { paragraphcount: action.payload }),
     setWpm: (state, action) => merge(state, { wpm: action.payload }),
-    setParagraphs: (state, action) =>
-      merge(state, { paragraphs: action.payload }),
-    setIndex: (state, action) => merge(state, { index: action.payload }),
-    setTime: (state, action) => merge(state, { time: action.payload }),
+    setIndex: (state, action) => {
+      const newIndex = action.payload;
+      return merge(state, { index: newIndex });
+    },
+
     toggleIntervalRunning: (state) =>
       merge(state, { intervalIsRunning: !state.intervalIsRunning }),
     toggleLinearMode: (state) => merge(state, { isLinear: !state.isLinear }),
@@ -44,24 +60,6 @@ const teleprompterSlice = createSlice({
       }
       return state;
     },
-    updateParagraphs: (state, action) => {
-      const response = uploadSelectors.selectResponse(state);
-      if (response && response.length >= 3) {
-        const selectedParagraphs = [
-          response[action.payload - 1]?.paragraph || '',
-          response[action.payload]?.paragraph || '',
-          response[action.payload + 1]?.paragraph || '',
-        ];
-        return merge(state, {
-          paragraphs: selectedParagraphs,
-          index: action.payload,
-          time: estimateReadingTime(selectedParagraphs[1], state.wpm),
-          wordCount: countWords(selectedParagraphs[1]),
-          progress: 0,
-        });
-      }
-      return state;
-    },
     setBookId: (state, action) => {
       state.bookID = action.payload;
     },
@@ -70,10 +68,18 @@ const teleprompterSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchParagraphCount.fulfilled, (state, action) => {
+        console.log(
+          'fetchParagraphCount fulfilled with payload:',
+          action.payload,
+        );
         state.paragraphcount = action.payload;
       })
       .addCase(fetchParagraphs.fulfilled, (state, action) => {
-        state.paragraphs = action.payload;
+        console.log('fetchParagraphs fulfilled with payload:', action.payload);
+        state.paragraphs = action.payload.paragraphs;
+        state.wordCount = action.payload.wordcount;
+        state.time = action.payload.time;
+        console.log('New state.time:', state.time);
       });
   },
 });
@@ -82,7 +88,6 @@ export const {
   setWpm,
   setParagraphs,
   setIndex,
-  setTime,
   toggleIntervalRunning,
   toggleLinearMode,
   setWordCount,

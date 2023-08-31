@@ -1,8 +1,8 @@
 # Pfad zum Verzeichnis, das Sie durchlaufen möchten
-$directoryPath = "E:\pdf-extractor\store"
+$directoryPath = "E:\pdf-extractor\components\Teleprompter"
 
 # Pfad zur Ausgabedatei
-$outputFile = "E:\pdf-extractor\store.txt"
+$outputFile = "E:\pdf-extractor\tele.txt"
 
 # Löscht die Ausgabedatei, falls sie bereits existiert
 if (Test-Path $outputFile) {

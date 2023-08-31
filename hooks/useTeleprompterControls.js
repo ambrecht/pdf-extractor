@@ -1,20 +1,14 @@
 import { useCallback } from 'react';
 import { useSelector, useDispatch, shallowEqual } from 'react-redux';
-
 import {
-  updateTeleprompterData,
-  setIndex,
+  updateIndex,
   toggleLinearMode,
   setWpm,
-  setParagraphs,
-  setTime,
   toggleIntervalRunning,
-  intervalIsRunning,
-  setWordCount,
-  setProgress,
 } from '../store/teleprompterSlice';
 
 const useTeleprompterControls = () => {
+  console.log('control hook loded');
   const dispatch = useDispatch();
 
   // Zustand innerhalb des Hooks abrufen
@@ -27,23 +21,25 @@ const useTeleprompterControls = () => {
     intervalIsRunning,
     wordCount,
     progress,
+    paragraphcount,
+    bookID,
   } = useSelector((state) => state.teleprompter, shallowEqual);
 
-  const uploadedParagraphs = useSelector((state) => state.upload.response);
-
   const handleNewParagraph = useCallback(() => {
-    dispatch(setIndex(Math.floor(Math.random() * uploadedParagraphs.length)));
-  }, [uploadedParagraphs, dispatch]);
+    console.log('handleNewParagraph', Math.random() * paragraphcount);
+    dispatch(updateIndex(Math.floor(Math.random() * paragraphcount))); // Verwenden Sie updateIndex
+  }, [paragraphcount, dispatch]);
 
   const handleNextClick = useCallback(() => {
-    if (index < uploadedParagraphs.length - 1) {
-      dispatch(setIndex(index + 1));
+    console.log('klick', 'count:', paragraphcount, 'index:', index);
+    if (index < paragraphcount - 1) {
+      dispatch(updateIndex(index + 1)); // Verwenden Sie updateIndex
     }
-  }, [index, uploadedParagraphs, dispatch]);
+  }, [dispatch, index, paragraphcount]);
 
   const handlePrevClick = useCallback(() => {
     if (index > 0) {
-      dispatch(setIndex(index - 1));
+      dispatch(updateIndex(index - 1)); // Verwenden Sie updateIndex
     }
   }, [index, dispatch]);
 
@@ -62,6 +58,11 @@ const useTeleprompterControls = () => {
     handlePrevClick,
     toggleMode,
     intervalIsRunning,
+    paragraphs,
+    time,
+    wordCount,
+    progress,
+    bookID,
   };
 };
 

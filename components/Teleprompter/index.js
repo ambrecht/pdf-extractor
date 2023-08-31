@@ -1,24 +1,21 @@
-import React from 'react';
+import React, { useMemo, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   selectControlPanelVisible,
   selectUploadFormVisible,
   selectOptionsPanelVisible,
   selectDocumentsPanelVisible,
-} from '../../store/navigationSlice';
-import ControlPanel from './ControlModal';
-import ParagraphDisplay from './ParagraphDisplay';
-import UploadModal from './uploadModal';
-import OptionsPanel from './OptionsPanel';
-import {
   toggleControlPanel,
   toggleUploadForm,
   toggleOptionsPanel,
   toggleDocumentsPanel,
 } from '../../store/navigationSlice';
+import { selectLoading } from '../../store/uploadSlice';
+import ControlModal from './ControlModal';
+import ParagraphDisplay from './ParagraphDisplay';
+import UploadModal from './uploadModal';
+import OptionsPanel from './OptionsPanel';
 import DocumentModal from './DocumentModal';
-
-import useTeleprompterControls from '../../hooks/useTeleprompterControls';
 
 const Teleprompter = () => {
   const dispatch = useDispatch();
@@ -26,64 +23,52 @@ const Teleprompter = () => {
   const uploadFormVisible = useSelector(selectUploadFormVisible);
   const optionsPanelVisible = useSelector(selectOptionsPanelVisible);
   const documentsPanelVisible = useSelector(selectDocumentsPanelVisible);
-  const paragraphs = useSelector((state) => state.teleprompter.paragraphs);
+  const loading = useSelector(selectLoading);
 
-  const teleprompterControls = useTeleprompterControls();
+  const handleToggle = (toggleAction) => () => dispatch(toggleAction());
 
-  const handleUploadFormToggle = () => {
-    dispatch(toggleUploadForm());
-  };
-  const handleControlPanelToggle = () => {
-    dispatch(toggleControlPanel());
-  };
-  const handleOptionsPanelToggle = () => {
-    dispatch(toggleOptionsPanel());
-  };
-  const handleDocumentsPanelToggle = () => {
-    dispatch(toggleDocumentsPanel());
-  };
+  const modalFrameRef = useRef(null);
+
+  const buttonsConfig = useMemo(
+    () => [
+      { action: toggleUploadForm, label: '+', color: 'blue' },
+      { action: toggleControlPanel, label: 'C', color: 'green' },
+      { action: toggleOptionsPanel, label: 'Options', color: 'orange' },
+      { action: toggleDocumentsPanel, label: 'Docs', color: 'red' },
+    ],
+    [],
+  );
 
   return (
-    <div className="bg-black min-h-screen flex flex-col sm:justify-center sm:items-center relative">
-      <button
-        onClick={handleUploadFormToggle}
-        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-blue-500 text-white flex items-center justify-center rounded-full hover:bg-blue-400 ml-30"
-      >
-        +
-      </button>
-      <button
-        onClick={handleControlPanelToggle}
-        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-green-500 text-white flex items-center justify-center rounded-full hover:bg-green-400 ml-10"
-      >
-        C
-      </button>
-      <button
-        onClick={handleOptionsPanelToggle}
-        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-orange-500 text-white flex items-center justify-center rounded-full hover:bg-orange-400 ml-20"
-      >
-        Options
-      </button>
-      <button
-        onClick={handleDocumentsPanelToggle}
-        className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-16 h-16 bg-red-500 text-white flex items-center justify-center rounded-full hover:bg-red-400 ml-40"
-      >
-        Docs
-      </button>
-      {controlPanelVisible && <ControlPanel {...teleprompterControls} />}
-
+    <div
+      id="modal-frame"
+      className="bg-white w-screen h-screen flex flex-col sm:justify-center sm:items-center relative overflow-hidden"
+      ref={modalFrameRef}
+    >
+      <ParagraphDisplay />
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-4">
+        {buttonsConfig.map(({ action, label, color }, index) => (
+          <button
+            key={index}
+            onClick={handleToggle(action)}
+            className={`w-16 h-16 bg-${color}-500 text-white flex items-center justify-center rounded-full hover:bg-${color}-400`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {controlPanelVisible && <ControlModal parentFrameRef={modalFrameRef} />}
       {uploadFormVisible && (
-        <UploadModal onClose={() => handleUploadFormToggle(false)} />
+        <UploadModal
+          onClose={handleToggle(toggleUploadForm)}
+          loading={loading}
+        />
       )}
-      {paragraphs.length > 0 && <ParagraphDisplay />}
       {optionsPanelVisible && (
-        <OptionsPanel
-          onClose={() => handleOptionsPanelToggle(false)}
-        ></OptionsPanel>
+        <OptionsPanel onClose={handleToggle(toggleOptionsPanel)} />
       )}
       {documentsPanelVisible && (
-        <DocumentModal
-          onClose={() => handleDocumentsPanelToggle(false)}
-        ></DocumentModal>
+        <DocumentModal onClose={handleToggle(toggleDocumentsPanel)} />
       )}
     </div>
   );

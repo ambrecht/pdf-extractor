@@ -1,3 +1,4 @@
+// E:\pdf-extractor\components\Teleprompter\OptionsPanel.js
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useThemeOptions } from '../../hooks/useThemeOptions';

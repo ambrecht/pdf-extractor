@@ -1,42 +1,37 @@
+// E:\pdf-extractor\components\Teleprompter\ControlModal.js
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import Modal from '../Modal';
-
+import useTeleprompterControls from '../../hooks/useTeleprompterControls';
 import { toggleControlPanel } from '../../store/navigationSlice';
-
-const ControlPanel = ({
-  wpm,
-  setWpm,
-  paragraphs,
-  index,
-  time,
-  intervalIsRunning,
-  isLinear,
-  wordCount,
-  progress,
-  elapsedTime,
-  intervalProgress,
-  updateIndex,
-  updateTeleprompterData,
-  toggleIntervalRunning,
-  toggleMode,
-  setWordCount,
-  setProgress,
-  handleNewParagraph,
-  handleNextClick,
-  handlePrevClick,
-  updateTeleprompterDataHandler,
-  nextMode,
-}) => {
+import Modal from '../Modal';
+const ControlModal = ({ parentFrameRef }) => {
   const dispatch = useDispatch();
+
+  const {
+    wpm,
+    setWpm,
+    index,
+    isLinear,
+    toggleIntervalRunning,
+    handleNewParagraph,
+    handleNextClick,
+    handlePrevClick,
+    toggleMode,
+    intervalIsRunning,
+    paragraphs,
+    time,
+    wordCount,
+    progress,
+    bookID,
+  } = useTeleprompterControls();
 
   const handleClosePanel = () => {
     dispatch(toggleControlPanel());
   };
 
   return (
-    <Modal>
-      <div className="bg-white p-4 shadow-md w-full max-w-screen-lg mx-auto">
+    <Modal onClose={handleClosePanel} parentFrameRef={parentFrameRef}>
+      <div>
         <button
           onClick={handleClosePanel}
           className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white flex items-center justify-center rounded-full hover:bg-red-400"
@@ -48,7 +43,7 @@ const ControlPanel = ({
             onClick={handleNewParagraph}
             className="text-lg p-2 rounded bg-blue-500 text-white hover:bg-blue-400"
           >
-            New Paragraph
+            Würfel
           </button>
           <button
             onClick={toggleIntervalRunning}
@@ -84,7 +79,7 @@ const ControlPanel = ({
             className="text-lg p-2 border rounded"
           />
           <h1 className="text-lg p-2 rounded bg-green-500 text-white hover:bg-green-400">
-            {time} Sekunden bei {wordCount} Wörtern
+            {time} Sekunden bei Wörtern
           </h1>
         </div>
       </div>
@@ -92,4 +87,4 @@ const ControlPanel = ({
   );
 };
 
-export default ControlPanel;
+export default ControlModal;
