@@ -1,14 +1,15 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useSelector, useDispatch, shallowEqual } from 'react-redux';
+import { estimateReadingTime } from '../utils/readingTime';
 import {
   updateIndex,
   toggleLinearMode,
   setWpm,
   toggleIntervalRunning,
+  setTime,
 } from '../store/teleprompterSlice';
 
 const useTeleprompterControls = () => {
-  console.log('control hook loded');
   const dispatch = useDispatch();
 
   // Zustand innerhalb des Hooks abrufen
@@ -24,6 +25,11 @@ const useTeleprompterControls = () => {
     paragraphcount,
     bookID,
   } = useSelector((state) => state.teleprompter, shallowEqual);
+
+  useEffect(() => {
+    const newTime = estimateReadingTime(paragraphs[1], wpm);
+    dispatch(setTime(newTime)); // <-- Dispatch the new time to the Redux store
+  }, [wpm, paragraphs, dispatch]);
 
   const handleNewParagraph = useCallback(() => {
     console.log('handleNewParagraph', Math.random() * paragraphcount);

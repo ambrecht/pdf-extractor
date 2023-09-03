@@ -4,13 +4,14 @@ import { createSlice } from '@reduxjs/toolkit';
 const themeSlice = createSlice({
   name: 'theme',
   initialState: {
-    fontSize: '16px',
+    fontSize: '3rem',
     fontColor: '#FFFFFF',
-    textAlignment: 'left',
+    textAlignment: 'center',
     backgroundColor: '#000000', // Setzen Sie einen Standardwert oder lassen Sie ihn leer
     animation: 'off',
     np: 'none',
     progressBarColor: '#FFFFFF',
+    progressDisplay: 'color',
   },
   reducers: {
     setFontSize: (state, action) => {

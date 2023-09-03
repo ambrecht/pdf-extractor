@@ -29,6 +29,9 @@ const navigationSlice = createSlice({
     toggleParagraphs: (state) => {
       state.paragraphsVisible = !state.paragraphsVisible;
     },
+    toggleHistoryTable: (state) => {
+      state.HistoryTableVisible = !state.HistoryTableVisible;
+    },
   },
 });
 
@@ -39,6 +42,7 @@ export const {
   toggleOptionsPanel,
   toggleDocumentsPanel,
   toggleParagraphs,
+  toggleHistoryTable,
 } = navigationSlice.actions;
 
 // SELECTORS
@@ -52,5 +56,8 @@ export const selectDocumentsPanelVisible = (state) =>
   state.navigation.documentsPanelVisible;
 export const selectparagraphsVisible = (state) =>
   state.navigation.paragraphsVisible;
+export const selectHistoryTableVisible = (state) =>
+  state.navigation.HistoryTableVisible;
+
 // REDUCER
 export default navigationSlice.reducer;

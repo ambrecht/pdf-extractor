@@ -1,8 +1,8 @@
-// E:\pdf-extractor\components\Teleprompter\OptionsPanel.js
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useThemeOptions } from '../../hooks/useThemeOptions';
 import Modal from '../Modal';
+import SelectOption from './selectOptions';
 
 const Options = ({ onClose }) => {
   const {
@@ -14,7 +14,6 @@ const Options = ({ onClose }) => {
     updateProgressDisplay,
   } = useThemeOptions();
 
-  // Werte aus dem Redux-Store lesen
   const {
     fontSize,
     fontColor,
@@ -25,94 +24,98 @@ const Options = ({ onClose }) => {
     progressBarColor,
   } = useSelector((state) => state.theme);
 
+  const fontSizeOptions = [
+    { label: 'Klein', value: '1rem' },
+    { label: 'Mittel', value: '1.5rem' },
+    { label: 'Groß', value: '2rem' },
+    { label: 'Sehr Groß', value: '3rem' },
+  ];
+
+  const fontColorOptions = [
+    { label: 'Weiß', value: '#FFFFFF' },
+    { label: 'Schwarz', value: '#000000' },
+    { label: 'Rot', value: '#FF0000' },
+    { label: 'Grün', value: '#00FF00' },
+    { label: 'Blau', value: '#0000FF' },
+    { label: 'Orange', value: '#FFA500' },
+    { label: 'Indigo', value: '#4B0082' },
+    { label: 'Violett', value: '#9400D3' },
+    { label: 'Rosa', value: '#FFC0CB' },
+    { label: 'Blauviolett', value: '#8A2BE2' },
+    { label: 'Chartreuse', value: '#7FFF00' },
+    { label: 'Schokolade', value: '#D2691E' },
+  ];
+
+  const themeOptions = [
+    { label: 'Invert Theme', value: 'invert' },
+    { label: 'Deinvert Theme', value: 'deinvert' },
+  ];
+
+  const textAlignOptions = [
+    { label: 'Left', value: 'left' },
+    { label: 'Center', value: 'center' },
+    { label: 'Right', value: 'right' },
+  ];
+
+  const animationOptions = [
+    { label: 'On', value: 'on' },
+    { label: 'Off', value: 'off' },
+  ];
+
+  const progressDisplayOptions = [
+    { label: 'Color', value: 'color' },
+    { label: 'Bar', value: 'bar' },
+    { label: 'None', value: 'none' },
+  ];
+
   return (
     <Modal onClose={onClose}>
       <div className="p-4 bg-white rounded shadow-lg max-h-screen max-w-screen overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Teleprompter Einstellungen</h2>
+        <h2 className="text-xl font-bold mb-4 text-black">
+          Teleprompter Einstellungen
+        </h2>
 
-        <div className="mb-4">
-          <label className="block mb-2">Font Size (in rem)</label>
-          <input
-            type="number"
-            min="1"
-            max="300"
-            value={parseInt(fontSize, 10)}
-            onChange={(e) => updateFontSize(`${e.target.value}rem`)}
-            className="p-2 border rounded w-full"
-          />
-        </div>
+        <SelectOption
+          label="Schriftgröße"
+          value={fontSize}
+          options={fontSizeOptions}
+          onChange={(e) => updateFontSize(e.target.value)}
+        />
 
-        <div className="mb-4">
-          <label className="block mb-2">Font Color</label>
-          <select
-            value={fontColor}
-            onChange={(e) => updateFontColor(e.target.value)}
-            className="p-2 border rounded w-full"
-          >
-            <option value="#FFFFFF">Weiß</option>
-            <option value="#000000">Schwarz</option>
-            <option value="#FF0000">Rot</option>
-            <option value="#00FF00">Grün</option>
-            <option value="#0000FF">Blau</option>
-            <option value="#FFA500">Orange</option>
-            <option value="#4B0082">Indigo</option>
-            <option value="#9400D3">Violett</option>
-            <option value="#FFC0CB">Rosa</option>
-            <option value="#8A2BE2">Blauviolett</option>
-            <option value="#7FFF00">Chartreuse</option>
-            <option value="#D2691E">Schokolade</option>
-          </select>
-        </div>
+        <SelectOption
+          label="Font Color"
+          value={fontColor}
+          options={fontColorOptions}
+          onChange={(e) => updateFontColor(e.target.value)}
+        />
 
-        <div className="mb-4">
-          <label className="block mb-2">Theme</label>
-          <select
-            value={textAlignment} // Hier habe ich angenommen, dass Sie das Textausrichtungsthema verwenden möchten. Wenn nicht, ändern Sie dies entsprechend.
-            onChange={(e) => updateThemeInversion()}
-            className="p-2 border rounded w-full"
-          >
-            <option value="invert">Invert Theme</option>
-            <option value="deinvert">Deinvert Theme</option>
-          </select>
-        </div>
+        <SelectOption
+          label="Theme"
+          value={textAlignment}
+          options={themeOptions}
+          onChange={(e) => updateThemeInversion()}
+        />
 
-        <div className="mb-4">
-          <label className="block mb-2">Text Alignment</label>
-          <select
-            value={textAlignment}
-            onChange={(e) => updateTextAlignment(e.target.value)}
-            className="p-2 border rounded w-full"
-          >
-            <option value="left">Left</option>
-            <option value="center">Center</option>
-            <option value="right">Right</option>
-          </select>
-        </div>
+        <SelectOption
+          label="Text Alignment"
+          value={textAlignment}
+          options={textAlignOptions}
+          onChange={(e) => updateTextAlignment(e.target.value)}
+        />
 
-        <div className="mb-4">
-          <label className="block mb-2">Animation</label>
-          <select
-            value={animation}
-            onChange={(e) => updateAnimation(e.target.value)}
-            className="p-2 border rounded w-full"
-          >
-            <option value="on">On</option>
-            <option value="off">Off</option>
-          </select>
-        </div>
+        <SelectOption
+          label="Animation"
+          value={animation}
+          options={animationOptions}
+          onChange={(e) => updateAnimation(e.target.value)}
+        />
 
-        <div className="mb-4">
-          <label className="block mb-2">Progress Display</label>
-          <select
-            value={progressDisplay}
-            onChange={(e) => updateProgressDisplay(e.target.value)}
-            className="p-2 border rounded w-full"
-          >
-            <option value="color">Color</option>
-            <option value="bar">Bar</option>
-            <option value="none">None</option>
-          </select>
-        </div>
+        <SelectOption
+          label="Progress Display"
+          value={progressDisplay}
+          options={progressDisplayOptions}
+          onChange={(e) => updateProgressDisplay(e.target.value)}
+        />
       </div>
     </Modal>
   );

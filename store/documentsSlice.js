@@ -4,7 +4,6 @@ import { supabase } from '../supabase/index';
 
 export const fetchBooks = createAsyncThunk('books/fetch', async () => {
   const { data, error } = await supabase.from('book').select('*');
-  console.log(data);
   if (error) throw error;
   return data;
 });
@@ -12,7 +11,12 @@ export const fetchBooks = createAsyncThunk('books/fetch', async () => {
 const booksSlice = createSlice({
   name: 'books',
   initialState: {
-    data: [],
+    data: [
+      {
+        book_id: 0,
+        book_title: 'Wähle ein Buch aus...',
+      },
+    ],
     loading: false,
     error: null,
   },
@@ -25,7 +29,14 @@ const booksSlice = createSlice({
       })
       .addCase(fetchBooks.fulfilled, (state, action) => {
         state.loading = false;
-        state.data = action.payload;
+        state.data = [
+          {
+            book_id: 0,
+            book_title: 'Wähle ein Buch',
+            author: ' dieser Liste',
+          },
+          ...action.payload,
+        ];
       })
       .addCase(fetchBooks.rejected, (state, action) => {
         state.loading = false;

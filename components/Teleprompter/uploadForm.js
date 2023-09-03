@@ -2,7 +2,6 @@ import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setFile, setTitle, setAuthor } from '../../store/uploadSlice';
 import { path } from 'ramda';
-import Modal from '../Modal';
 import { uploadFile } from '../../store/thunks/uploadFile';
 import { extractTitleAndAuthor } from '../../utils/extractMetadata';
 
@@ -45,37 +44,36 @@ const UploadModal = ({ onClose }) => {
   );
 
   return (
-    <Modal onClose={onClose}>
-      <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => dispatch(setTitle(e.target.value))}
-          placeholder="Buchtitel"
-          className="p-2 border rounded"
-        />
-        <input
-          type="text"
-          value={author}
-          onChange={(e) => dispatch(setAuthor(e.target.value))}
-          placeholder="Autor"
-          className="p-2 border rounded"
-        />
-        <input
-          type="file"
-          onChange={handleFileChange}
-          className="p-2 border rounded"
-        />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-400"
-        >
-          Upload
-        </button>
-      </form>
+    <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => dispatch(setTitle(e.target.value))}
+        placeholder="Buchtitel"
+        className="p-2 border rounded"
+      />
+      <input
+        type="text"
+        value={author}
+        onChange={(e) => dispatch(setAuthor(e.target.value))}
+        placeholder="Autor"
+        className="p-2 border rounded"
+      />
+      <input
+        type="file"
+        onChange={handleFileChange}
+        className="p-2 border rounded"
+      />
+      <button
+        type="submit"
+        className="bg-blue-500 text-white p-2 rounded hover:bg-blue-400"
+      >
+        Upload
+      </button>
+
       {error && <p className="mt-4 text-red-500">Error: {error}</p>}
       {file && <p className="mt-4">Response: Das Ding ging durch!</p>}
-    </Modal>
+    </form>
   );
 };
 

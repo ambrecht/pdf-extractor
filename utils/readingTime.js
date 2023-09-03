@@ -9,7 +9,7 @@
 export const estimateReadingTime = (
   text,
   wordsPerMinute,
-  pauseTimes = { '.': 0.5, ',': 0.25, '!': 0.5, '?': 0.5 },
+  pauseTimes = { '.': 0.2, ',': 0.1, '!': 0.2, '?': 0.2 },
 ) => {
   // Let's be adults and validate our inputs, shall we?
   if (
@@ -40,6 +40,7 @@ export const estimateReadingTime = (
   const seconds = minutes * 60 + pauseTime;
 
   console.log(
+    text,
     `Estimated reading time: ${Math.ceil(
       seconds,
     )} seconds. Plan your life accordingly.`,

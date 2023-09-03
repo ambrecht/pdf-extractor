@@ -1,54 +1,45 @@
-// E:\pdf-extractor\store\thunks\fetchParagraphs.js
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { supabase } from '../../supabase/index';
 import { estimateReadingTime } from '../../utils/readingTime';
+
+/**
+ * Fetch paragraphs from the database and calculate the estimated reading time.
+ * @param {Object} payload - The payload object.
+ * @param {number} payload.index - The index of the paragraph.
+ * @param {string} payload.bookId - The ID of the book.
+ * @param {Function} thunkAPI - The Redux toolkit API.
+ * @returns {Object} - The paragraphs, word count, and estimated reading time.
+ */
 export const fetchParagraphs = createAsyncThunk(
   'teleprompter/fetchParagraphs',
   async ({ index, bookId }, { getState }) => {
-    console.log(
-      'fetchParagraphs Thunk called with index:',
-      index,
-      'and bookId:',
-      bookId,
-    );
+    const fetchIndices = index <= 1 ? [1, 2, 3] : [index - 1, index, index + 1];
 
     const { data, error } = await supabase
       .from('paragraphs')
-      .select('paragraph_string, wordcount')
+      .select('paragraph_string, wordcount, paragraph_index')
       .eq('book_id', bookId)
-      .in(
-        'paragraph_index',
-        index <= 1 ? [1, 2, 3] : [index - 1, index, index + 1],
-      );
-
-    console.log('Data from database:', data);
+      .in('paragraph_index', fetchIndices);
 
     if (error) {
       console.error('Error fetching paragraphs:', error);
       throw error;
     }
 
+    const sortedData = data.sort(
+      (a, b) => a.paragraph_index - b.paragraph_index,
+    );
     const paragraphStrings = data.map((item) => item.paragraph_string);
-    const arrayIndex = index <= 1 ? index : 1;
-    console.log('Array index used:', arrayIndex);
 
-    const mainParagraphWordcount = data[arrayIndex]?.wordcount;
-    console.log('Main paragraph word count:', mainParagraphWordcount);
+    const mainParagraph = sortedData.find(
+      (item) => item.paragraph_index === (index > 1 ? index : 1),
+    );
+    const mainParagraphWordcount = data[1].wordcount;
+
+    console.log('hier', index > 1 ? index : 1, mainParagraph);
 
     const state = getState().teleprompter;
-    console.log('Current teleprompter state:', state);
-
-    const selectedParagraph = paragraphStrings[arrayIndex];
-    const newTime = estimateReadingTime(selectedParagraph, state.wpm);
-
-    console.log(
-      'Estimated reading time:',
-      newTime,
-      'for paragraph:',
-      selectedParagraph,
-    );
-    console.log('Length of paragraphStrings array:', paragraphStrings.length);
-    console.log('Current state index:', state.index);
+    const newTime = estimateReadingTime(paragraphStrings[1], state.wpm);
 
     return {
       paragraphs: paragraphStrings,

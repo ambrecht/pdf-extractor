@@ -19,6 +19,7 @@ const calculateCharColor = (isTargetChar, theme, idx) => {
 
 const ParagraphDisplay = () => {
   const localProgress = useProgressUpdate();
+  console.log('local2', localProgress);
   const { paragraphs, intervalIsRunning } = useSelector(
     (state) => state.teleprompter,
   );

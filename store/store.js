@@ -5,6 +5,7 @@ import themeReducer from './themeSlice';
 import uploadReducer from './uploadSlice';
 import navigationReducer from './navigationSlice';
 import documentsSlice, { fetchBooks } from './documentsSlice';
+import historyReducer from './historySlice';
 
 const store = configureStore({
   reducer: {
@@ -13,6 +14,7 @@ const store = configureStore({
     upload: uploadReducer,
     navigation: navigationReducer,
     documents: documentsSlice,
+    history: historyReducer,
   },
 });
 
