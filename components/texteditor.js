@@ -53,4 +53,5 @@ const TextEditor = ({ paragraph }) => {
     </StyledTextEditor>
   );
 };
-export default TextEditor;
+export default TextEditor;
+

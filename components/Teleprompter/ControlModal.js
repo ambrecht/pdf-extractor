@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import useTeleprompterControls from '../../hooks/useTeleprompterControls';
+
 import { toggleControlPanel } from '../../store/navigationSlice';
 import Modal from '../Modal';
 
@@ -16,12 +17,23 @@ const ControlModal = ({ parentFrameRef }) => {
     toggleMode,
     intervalIsRunning,
     time,
+    handleSetIndex,
   } = useTeleprompterControls();
 
   const { wordCount, isLinear } = useSelector((state) => state.teleprompter);
 
   const handleClosePanel = () => {
     dispatch(toggleControlPanel());
+  };
+
+  const [indexInput, setIndexInput] = React.useState('');
+
+  const handleIndexSubmit = () => {
+    handleSetIndex(parseInt(indexInput, 10));
+  };
+
+  const handleIndexInputChange = (e) => {
+    setIndexInput(e.target.value);
   };
 
   return (
@@ -72,6 +84,23 @@ const ControlModal = ({ parentFrameRef }) => {
           <h1 className="text-sm p-1 rounded bg-green-500 text-white hover:bg-green-400">
             {time} Sekunden bei {wordCount} Wörtern
           </h1>
+        </div>
+        <div className="flex space-x-2">
+          <label className="text-sm p-1 bg-gray-300 rounded">Index:</label>
+          <input
+            type="number"
+            min="0"
+            max="99999"
+            value={indexInput}
+            onChange={handleIndexInputChange}
+            className="text-sm p-1 border rounded"
+          />
+          <button
+            onClick={handleIndexSubmit}
+            className="text-sm p-1 rounded bg-green-500 text-white hover:bg-green-400"
+          >
+            Set Index
+          </button>
         </div>
       </div>
     </Modal>

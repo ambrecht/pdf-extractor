@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   selectControlPanelVisible,
@@ -13,10 +13,12 @@ import {
 import { selectLoading } from '../../store/uploadSlice';
 import ControlModal from './ControlModal';
 import ParagraphDisplay from './ParagraphDisplay';
-import UploadModal from './uploadForm';
 import OptionsPanel from './OptionsPanel';
 import DocumentModal from './DocumentModal';
 import HistoryComponent from './History'; // Import the HistoryComponent
+import useKeyDownEvent from '../../hooks/useKeyDownEvent';
+import NotificationBubble from '../NotificationBibble';
+import WelcomeSection from './WelcomeMessage';
 
 const Teleprompter = () => {
   const dispatch = useDispatch();
@@ -26,17 +28,52 @@ const Teleprompter = () => {
   const historyTableVisible = useSelector(selectHistoryTableVisible);
   const loading = useSelector(selectLoading);
   const backgroundColor = useSelector((state) => state.theme.backgroundColor);
+  const paragraphs = useSelector((state) => state.teleprompter.paragraphs);
 
   const handleToggle = (toggleAction) => () => dispatch(toggleAction());
 
   const modalFrameRef = useRef(null);
 
+  useKeyDownEvent();
+
+  const [hoverMessage, setHoverMessage] = useState('');
+
+  const handleMouseEnter = (message) => () => {
+    setHoverMessage(message);
+  };
+
+  const handleMouseLeave = () => {
+    setHoverMessage('');
+  };
+
   const buttonsConfig = useMemo(
     () => [
-      { action: toggleControlPanel, label: 'C', color: 'green' },
-      { action: toggleOptionsPanel, label: 'Options', color: 'orange' },
-      { action: toggleDocumentsPanel, label: 'Docs', color: 'red' },
-      { action: toggleHistoryTable, label: 'History', color: 'blue' },
+      {
+        action: toggleControlPanel,
+        label: 'Control',
+        color: 'green',
+        message:
+          'Starten Sie die automatische Absatzanzeige und steuern Sie die Geschwindikgeit  ',
+      },
+      {
+        action: toggleOptionsPanel,
+        label: 'Options',
+        color: 'gray',
+        message:
+          'Hier können Sie die visuelle Anzeige wie Farbe und Schriftart einstellen',
+      },
+      {
+        action: toggleDocumentsPanel,
+        label: 'Docs',
+        color: 'red',
+        message: 'Hier können Sie Dokumente hochladen und auswählen',
+      },
+      {
+        action: toggleHistoryTable,
+        label: 'History',
+        color: 'blue',
+        message: 'Hier sehen Sie eine Tabelle der bisher angezeigten Absätze',
+      },
     ],
     [],
   );
@@ -48,11 +85,19 @@ const Teleprompter = () => {
       ref={modalFrameRef}
       style={{ backgroundColor: backgroundColor }}
     >
-      {historyTableVisible ? <HistoryComponent /> : <ParagraphDisplay />}
+      {historyTableVisible ? (
+        <HistoryComponent />
+      ) : paragraphs.length > 0 ? (
+        <ParagraphDisplay />
+      ) : (
+        <WelcomeSection />
+      )}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-4">
-        {buttonsConfig.map(({ action, label, color }, index) => (
+        {buttonsConfig.map(({ action, label, color, message }, index) => (
           <button
             key={index}
+            onMouseEnter={handleMouseEnter(message)}
+            onMouseLeave={handleMouseLeave}
             onClick={handleToggle(action)}
             className={`w-16 h-16 bg-${color}-500 text-white flex items-center justify-center rounded-full hover:bg-${color}-400`}
           >
@@ -60,6 +105,11 @@ const Teleprompter = () => {
           </button>
         ))}
       </div>
+      {hoverMessage && (
+        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-black p-2 border border-gray-300 rounded shadow-lg">
+          {hoverMessage}
+        </div>
+      )}
       {controlPanelVisible && <ControlModal parentFrameRef={modalFrameRef} />}
       {optionsPanelVisible && (
         <OptionsPanel onClose={handleToggle(toggleOptionsPanel)} />
@@ -67,6 +117,7 @@ const Teleprompter = () => {
       {documentsPanelVisible && (
         <DocumentModal onClose={handleToggle(toggleDocumentsPanel)} />
       )}
+      <NotificationBubble></NotificationBubble>
     </div>
   );
 };

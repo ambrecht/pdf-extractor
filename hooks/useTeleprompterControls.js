@@ -32,12 +32,10 @@ const useTeleprompterControls = () => {
   }, [wpm, paragraphs, dispatch]);
 
   const handleNewParagraph = useCallback(() => {
-    console.log('handleNewParagraph', Math.random() * paragraphcount);
     dispatch(updateIndex(Math.floor(Math.random() * paragraphcount))); // Verwenden Sie updateIndex
   }, [paragraphcount, dispatch]);
 
   const handleNextClick = useCallback(() => {
-    console.log('klick', 'count:', paragraphcount, 'index:', index);
     if (index < paragraphcount - 1) {
       dispatch(updateIndex(index + 1)); // Verwenden Sie updateIndex
     }
@@ -52,6 +50,17 @@ const useTeleprompterControls = () => {
   const toggleMode = useCallback(() => {
     dispatch(toggleLinearMode());
   }, [dispatch]);
+
+  const handleSetIndex = useCallback(
+    (newIndex) => {
+      if (newIndex >= 0 && newIndex < paragraphcount) {
+        dispatch(updateIndex(newIndex));
+      } else {
+        console.warn('Index außerhalb des gültigen Bereichs');
+      }
+    },
+    [dispatch, paragraphcount],
+  );
 
   return {
     wpm,
@@ -69,6 +78,7 @@ const useTeleprompterControls = () => {
     wordCount,
     progress,
     bookID,
+    handleSetIndex,
   };
 };
 

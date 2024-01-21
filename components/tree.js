@@ -23,4 +23,5 @@ const ExampleComponent = () => {
     </div>
   );
 };
-export default ExampleComponent;
+export default ExampleComponent;
+

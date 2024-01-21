@@ -1,11 +1,17 @@
-// E:\pdf-extractor\components\Teleprompter\ParagraphDisplay\styles.js
-
 import styled, { keyframes } from 'styled-components';
-const waveColor = keyframes`   0% {     color: #808080;     transform: scale(1);   }   50% {     color: ${(
-  props,
-) =>
-  props.theme
-    .fontColor};     transform: scale(1.1);   }   100% {     color: #808080;     transform: scale(1);   }`;
+
+const waveColor = keyframes`
+  0% {
+    color: initial;
+  }
+  50% {
+    color: ${(props) => props.color};
+  }
+  100% {
+    color: initial;
+  }
+`;
+
 const StyledDiv = styled.div`
   overflow-y: auto;
   max-height: 100vh;
@@ -14,6 +20,7 @@ const StyledDiv = styled.div`
   background-color: ${(props) => props.bgColor};
   padding: 1rem;
 `;
+
 const StyledParagraph = styled.p`
   font-weight: 600;
   text-align: ${(props) => props.align};
@@ -25,12 +32,15 @@ const StyledParagraph = styled.p`
 `;
 const StyledSpan = styled.span`
   color: ${(props) => props.color};
-  animation: ${(props) => (props.animate ? waveColor : 'none')};
+  animation: ${(props) => (props.animate ? waveColor : 'none')}
+    ${(props) => (props.isTarget ? '1s' : '0s')} infinite;
   transition: color 0.3s ease;
 `;
+
 const ProgressBar = styled.div`
   height: 0.25rem;
   background-color: ${(props) => props.bgColor || 'white'};
   width: ${(props) => `${props.progress}%`};
 `;
+
 export { StyledDiv, StyledParagraph, StyledSpan, ProgressBar };

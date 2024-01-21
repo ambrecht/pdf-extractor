@@ -17,4 +17,5 @@ const WordCloud = ({ file }) => {
     <div>{data ? <wordcloud.Renderer words={data} /> : <p>Loading...</p>}</div>
   );
 };
-export default WordCloud;
+export default WordCloud;
+

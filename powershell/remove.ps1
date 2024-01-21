@@ -1,4 +1,4 @@
-$directoryPath = "E:\pdf-extractor\hooks" # Ändern Sie dies in den Pfad Ihres Verzeichnisses
+$directoryPath = "E:\pdf-extractor\store" # Ändern Sie dies in den Pfad Ihres Verzeichnisses
 
 Get-ChildItem -Path $directoryPath -Filter *.js -Recurse | ForEach-Object {
     $filePath = $_.FullName

@@ -11,4 +11,5 @@ const TextInput = ({ value, onChange, min, max, className, type = 'text' }) => {
     />
   );
 };
-export default TextInput;
+export default TextInput;
+

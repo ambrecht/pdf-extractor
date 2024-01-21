@@ -41,4 +41,5 @@ const HistoryTable = ({ history, data }) => {
     </div>
   );
 };
-export default HistoryTable;
+export default HistoryTable;
+

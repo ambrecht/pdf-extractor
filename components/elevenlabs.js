@@ -29,4 +29,5 @@ const TextToSpeech = ({ text, voice_id }) => {
     </div>
   );
 };
-export default TextToSpeech;
+export default TextToSpeech;
+

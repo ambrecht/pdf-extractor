@@ -46,4 +46,5 @@ const Teleprompter = ({ text }) => {
     </div>
   );
 };
-export default Teleprompter;
+export default Teleprompter;
+

@@ -56,4 +56,5 @@ const ParagraphReader = ({ data }) => {
     </div>
   );
 };
-export default ParagraphReader;
+export default ParagraphReader;
+

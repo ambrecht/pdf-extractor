@@ -180,4 +180,5 @@ const RandomParagraph = ({ data }) => {
     </div>
   );
 };
-export default RandomParagraph;
+export default RandomParagraph;
+

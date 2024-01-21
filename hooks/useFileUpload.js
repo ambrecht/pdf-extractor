@@ -18,4 +18,5 @@ const useFileUpload = () => {
   }, []);
   return handleFileChange;
 };
-export default useFileUpload;
+export default useFileUpload;
+

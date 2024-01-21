@@ -5,5 +5,4 @@
  * @param {string} [color='red'] - The color for the log text.
  */
 export const log = (msg, color = 'red') => {
-  console.log(`%c${msg}`, `color: ${color}`);
 };

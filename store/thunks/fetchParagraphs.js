@@ -36,7 +36,6 @@ export const fetchParagraphs = createAsyncThunk(
     );
     const mainParagraphWordcount = data[1].wordcount;
 
-    console.log('hier', index > 1 ? index : 1, mainParagraph);
 
     const state = getState().teleprompter;
     const newTime = estimateReadingTime(paragraphStrings[1], state.wpm);

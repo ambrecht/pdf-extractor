@@ -11,4 +11,5 @@ const MyComponent = () => {
   }, []); // Leeres Abhängigkeitsarray, damit der Listener nur einmal hinzugefügt wird
   return <div>Drücken Sie eine Taste auf Ihrer Tastatur</div>;
 };
-export default MyComponent;
+export default MyComponent;
+
